@@ -11,6 +11,11 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+
+          primary: '#013961', // اللون الأساسي اللي انت شغال بيه
+          secondary: '#006d4e',
+          gradientStart: '#013961', // بداية التدرج
+          gradientEnd: '#006d4e',  // نهاية التدرج
       },
     },
   },
