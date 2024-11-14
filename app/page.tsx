@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@mui/material';
 import { useRouter } from 'next/navigation'; // Or use react-router-dom if not using Next.js
 
-const MenuButtons: React.FC = () => {
+const MenuButtons = () => {
   const router = useRouter();
 
   // Function to handle routing

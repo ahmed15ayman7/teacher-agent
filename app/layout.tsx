@@ -4,9 +4,9 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@mui/material/styles";
 import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import CssBaseline from "@mui/material/CssBaseline";
 import { baselightTheme } from "@/utils/theme/DefaultColors";
-import "react-toastify/dist/ReactToastify.css";
 import InfintyProvider from "@/components/providers/InfintyProvider";
 import Background from "@/components/card/bg";
 const geistSans = localFont({
@@ -28,20 +28,19 @@ export default function RootLayout({
 
   return (
     <InfintyProvider>
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        dir="rtl"
+      <html lang="ar">
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          dir="rtl"
         >
-           <ThemeProvider theme={baselightTheme}>
-
-        <CssBaseline />
-        <Background />
-        {children}
-        <ToastContainer/>
-           </ThemeProvider>
-      </body>
-    </html>
-        </InfintyProvider>
+          <ThemeProvider theme={baselightTheme}>
+            <CssBaseline />
+            <Background />
+            {children}
+            <ToastContainer />
+          </ThemeProvider>
+        </body>
+      </html>
+    </InfintyProvider>
   );
 }

@@ -31,9 +31,11 @@ body {
     text-wrap: balance;
   }
 }
-.css-lpesjx-MuiPaper-root-MuiDrawer-paper{
+
+.css-lpesjx-MuiPaper-root-MuiDrawer-paper {
   background: transparent !important;
 }
+
 .custom-select {
   padding: 8px;
   border-radius: 7px;
@@ -41,15 +43,50 @@ body {
   background-color: #fff;
   color: #000;
   width: 100%;
-  height: 100%; /* لجعل الارتفاع كامل */
-  box-sizing: border-box; /* لضمان أن الحواف تأخذ المساحة الصحيحة */
-  padding-right: 32px; /* مساحة لعرض الأيقونة */
+  height: 100%;
+  /* لجعل الارتفاع كامل */
+  box-sizing: border-box;
+  /* لضمان أن الحواف تأخذ المساحة الصحيحة */
+  padding-right: 32px;
+  /* مساحة لعرض الأيقونة */
 }
+
 .select-container {
-  
-  height: 100%; /* لجعل الارتفاع كامل */
+  height: 100%;
+  /* لجعل الارتفاع كامل */
   position: relative;
   width: 80%;
+}
+
+.select-container.ttt {
+  width: 39%;
+}
+
+.select-container.ttt .custom-select {
+  padding: 4px;
+  border-radius: 7px;
+  border: 1px solid #006d4e;
+  background-color: #fff;
+  color: #000;
+  width: 100%;
+  height: 100%;
+  /* لجعل الارتفاع كامل */
+  box-sizing: border-box;
+  /* لضمان أن الحواف تأخذ المساحة الصحيحة */
+  padding-right: 32px;
+  /* مساحة لعرض الأيقونة */
+}
+
+.select-container.ttt .custom-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #006d4e;
+  /* لون الأيقونة */
+  font-size: 16px;
+  /* حجم الأيقونة */
 }
 
 .custom-icon {
@@ -58,11 +95,14 @@ body {
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
-  color: #006d4e; /* لون الأيقونة */
-  font-size: 16px; /* حجم الأيقونة */
+  color: #006d4e;
+  /* لون الأيقونة */
+  font-size: 16px;
+  /* حجم الأيقونة */
 }
 
 .custom-select:focus {
   outline: 2px solid #006d4e;
-  border-color: #006d4e; /* تغيير لون الحدود عند التركيز */
+  border-color: #006d4e;
+  /* تغيير لون الحدود عند التركيز */
 }

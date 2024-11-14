@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Link from 'next/link';
 import {
   Box,
   Button,
@@ -25,7 +26,7 @@ import { useRouter } from 'next/navigation';
 // Define Zod schema for form validation
 const teacherSchema = z.object({
   teacherId: z.string().nonempty("Please select a teacher"),
-  name: z.string().nonempty("Please select a teacher"),
+  // name: z.string().nonempty("Please select a teacher"),
   specialization: z.string().optional(),
   civilRecord: z.string().optional(),
   sessionCount: z.number().optional(),
@@ -44,11 +45,11 @@ const teacherSchema = z.object({
 type TeacherFormInputs = z.infer<typeof teacherSchema>;
 
 const TeacherForm = () => {
-  const { control, handleSubmit, setValue, reset } = useForm<TeacherFormInputs>({
+  const { control, handleSubmit, setValue, reset, getValues } = useForm<TeacherFormInputs>({
     resolver: zodResolver(teacherSchema),
     defaultValues: {
       teacherId: "",
-      name: "",
+      // name: "",
       specialization: "",
       civilRecord: "",
       sessionCount: 0,
@@ -79,7 +80,7 @@ const TeacherForm = () => {
   let router = useRouter()
   const onSelectTeacher = async (teacherId: string) => {
     const teacherData = await axios.get(`/api/teachers/${teacherId}`);
-    setSelectedTeacher(teacherData.data);
+    setSelectedTeacher(teacherData.data._id);
     Object.keys(teacherData.data).forEach(key => {
       setValue(key as keyof TeacherFormInputs, teacherData.data[key]);
     });
@@ -329,9 +330,13 @@ const TeacherForm = () => {
                 )}
               />
             </Grid>
-            <Grid xs={12} md={6}>
-              <Button className={buttonStyles2} fullWidth>اضغط هنا لاستعراض جدوله الدراسي</Button>
-            </Grid>
+            {selectedTeacher &&
+              <Grid xs={12} md={6}>
+                <Link href={`/add-notes?id=${selectedTeacher}`}>
+                  <Button className={buttonStyles2} fullWidth>اضغط هنا لاستعراض جدوله الدراسي</Button>
+                </Link>
+              </Grid>
+            }
           </Grid>
         </Grid>
 
