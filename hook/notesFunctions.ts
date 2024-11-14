@@ -2,8 +2,11 @@
 
 import { toast } from "react-toastify";
 import axios from "axios";
-import { getNoteColor, generateLessonNotes, getEnglishDay } from "@/constants";
-import { Lesson } from "@/lib/models/WeeklySchedule";
+import {
+  getNoteColor,
+  generateCombinedNotesAndStatus,
+  getEnglishDay,
+} from "@/constants";
 
 export const handleSaveNoteHandler = async (
   selectedTeacher: string,
@@ -18,11 +21,13 @@ export const handleSaveNoteHandler = async (
   setSelectedNotes: React.Dispatch<React.SetStateAction<string[]>>,
   setCustomNote: React.Dispatch<React.SetStateAction<string>>,
   setDuration: React.Dispatch<React.SetStateAction<string>>,
-  setDuration2: React.Dispatch<React.SetStateAction<string>>
+  setDuration2: React.Dispatch<React.SetStateAction<string>>,
+  title: string,
+  duration3: string
 ) => {
   const toastId = toast.loading("جاري حفظ الملاحظات");
   if (selectedTeacher) {
-    if (selectedNotes.length > 0 || customNote) {
+    if (selectedNotes.length > 0 || customNote || title) {
       const noteColors = [
         ...selectedNotes.map(getNoteColor),
         customNote ? "blue" : "",
@@ -43,7 +48,13 @@ export const handleSaveNoteHandler = async (
         },
       }));
 
-      let notes = generateLessonNotes(selectedNotes, +duration, +duration2);
+      let notes2 = generateCombinedNotesAndStatus(
+        selectedNotes,
+        selectedTeacher,
+        +duration,
+        +duration2,
+        +duration3
+      );
       let lesson = {
         day: getEnglishDay(
           selectedCell?.day as
@@ -54,7 +65,8 @@ export const handleSaveNoteHandler = async (
             | "الخميس"
         ),
         period: parseInt(selectedCell?.period!),
-        notes: notes,
+        notes: { ...notes2, note: customNote },
+        title: title,
       };
       let startWeek = START_END_WEEK.start.toLocaleDateString("en-US", {
         year: "numeric",

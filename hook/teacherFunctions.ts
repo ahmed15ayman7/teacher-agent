@@ -1,7 +1,6 @@
 // teacherFunctions.ts
 
 import axios from "axios";
-import { ITeacher } from "@/lib/models/Teacher";
 import { toast } from "react-toastify";
 import { getArabicDay, generateNoteDisplay } from "@/constants";
 

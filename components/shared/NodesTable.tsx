@@ -1,3 +1,4 @@
+import { getEnglishDay } from "@/constants";
 import { ITeacher } from "@/lib/models/Teacher";
 import { Lesson } from "@/lib/models/WeeklySchedule";
 import {
@@ -9,7 +10,9 @@ import {
   TableHead,
   TableRow,
   Tooltip,
+  Typography,
 } from "@mui/material";
+import { motion } from "framer-motion"; // استيراد framer-motion
 import React from "react";
 
 const NodesTable = ({
@@ -21,7 +24,11 @@ const NodesTable = ({
   notes: {
     [key: string]: { text: string[]; colors: string[]; durations?: string[] };
   };
-  schedule: { teacher: ITeacher; weekStartDate: Date; lesson: Lesson[] } | null;
+  schedule: {
+    teacher: ITeacher;
+    weekStartDate: Date;
+    lessons: Lesson[];
+  } | null;
 }) => {
   return (
     <TableContainer>
@@ -56,18 +63,47 @@ const NodesTable = ({
                 const period = i + 1;
                 const key = `${day}-${period}`;
                 const noteData = notes[key];
+                let title = schedule?.lessons
+                  .map((e) =>
+                    e.day ===
+                      getEnglishDay(
+                        day as
+                          | "الأحد"
+                          | "الاثنين"
+                          | "الثلاثاء"
+                          | "الأربعاء"
+                          | "الخميس"
+                      ) && e.period === +period
+                      ? e
+                      : null
+                  )
+                  .filter((e) => e !== null)[0]?.title;
+
                 return (
-                  <TableCell
-                    sx={{ border: "1px solid black", textAlign: "center" }}
+                  <motion.td
+                    style={{
+                      border: "1px solid black",
+                      textAlign: "center",
+                      cursor: "pointer",
+                    }}
                     className={"max-w-24"}
-                    key={period}
+                    onClick={() => handleCellClick(day, `${period}`)}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4 }}
+                    key={key}
                   >
-                    <Tooltip title={noteData ? "" : "اضغط لإدخال ملاحظة"} arrow>
-                      <Box
-                        onClick={() => handleCellClick(day, `${period}`)}
-                        sx={{ cursor: "pointer" }}
-                        className={"max-w-24"}
-                      >
+                    {title && (
+                      <Typography className=" font-bold text-[23px] text-center w-full ">
+                        {title}
+                      </Typography>
+                    )}
+                    <Tooltip
+                      title={noteData ? "" : "اضغط لإدخال ملاحظة"}
+                      className="w-full"
+                      arrow
+                    >
+                      <Box className={"max-w-24 w-full"}>
                         {noteData ? (
                           <Box
                             display="flex"
@@ -75,41 +111,23 @@ const NodesTable = ({
                             className={"max-w-24"}
                             gap={0.5}
                           >
-                            {noteData.text.map((note, idx) =>
-                              noteData.colors[idx] === "blue" ? (
-                                <Tooltip
-                                  key={idx}
-                                  className=" order-first w-full"
-                                  title={`${note}${
-                                    noteData.durations &&
-                                    noteData.durations[idx]
-                                      ? ` (${noteData.durations[idx]} دقيقة)`
-                                      : ""
-                                  }`}
-                                  arrow
-                                >
-                                  <div className="flex justify-evenly">
-                                    {note}
-                                    <Box
-                                      sx={{
-                                        width: 13,
-                                        height: 13,
-                                        borderRadius: "20%",
-                                        backgroundColor: noteData.colors[idx],
-                                      }}
-                                    />
-                                  </div>
-                                </Tooltip>
-                              ) : (
-                                <Tooltip
-                                  key={idx}
-                                  title={`${note}${
-                                    noteData.durations &&
-                                    noteData.durations[idx]
-                                      ? ` (${noteData.durations[idx]} دقيقة)`
-                                      : ""
-                                  }`}
-                                  arrow
+                            {noteData.text.map((note, idx) => (
+                              <Tooltip
+                                key={idx}
+                                title={`${note}${
+                                  noteData.durations && noteData.durations[idx]
+                                    ? ` (${noteData.durations[idx]} دقيقة)`
+                                    : ""
+                                }`}
+                                arrow
+                              >
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.5 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{
+                                    duration: 0.3,
+                                    delay: idx * 0.1,
+                                  }}
                                 >
                                   <Box
                                     sx={{
@@ -119,16 +137,16 @@ const NodesTable = ({
                                       backgroundColor: noteData.colors[idx],
                                     }}
                                   />
-                                </Tooltip>
-                              )
-                            )}
+                                </motion.div>
+                              </Tooltip>
+                            ))}
                           </Box>
                         ) : (
                           <span> . </span>
                         )}
                       </Box>
                     </Tooltip>
-                  </TableCell>
+                  </motion.td>
                 );
               })}
             </TableRow>
@@ -141,7 +159,7 @@ const NodesTable = ({
 
 export default NodesTable;
 
-// import { generateNoteDisplay } from "@/constants";
+// import { getEnglishDay } from "@/constants";
 // import { ITeacher } from "@/lib/models/Teacher";
 // import { Lesson } from "@/lib/models/WeeklySchedule";
 // import {
@@ -153,19 +171,24 @@ export default NodesTable;
 //   TableHead,
 //   TableRow,
 //   Tooltip,
+//   Typography,
 // } from "@mui/material";
 // import React from "react";
 
 // const NodesTable = ({
 //   handleCellClick,
-//   schedule,
 //   notes,
+//   schedule,
 // }: {
 //   handleCellClick: (day: string, t: string) => void;
 //   notes: {
 //     [key: string]: { text: string[]; colors: string[]; durations?: string[] };
 //   };
-//   schedule: { teacher: ITeacher; weekStartDate: Date; lesson: Lesson[] } | null;
+//   schedule: {
+//     teacher: ITeacher;
+//     weekStartDate: Date;
+//     lessons: Lesson[];
+//   } | null;
 // }) => {
 //   return (
 //     <TableContainer>
@@ -176,11 +199,11 @@ export default NodesTable;
 //               اليوم
 //             </TableCell>
 //             {[...Array(8)].map((_, index) => (
-//               <Tooltip title={`الحصة ${8 - index}`} arrow key={index}>
+//               <Tooltip title={`الحصة ${index + 1}`} arrow key={index}>
 //                 <TableCell
 //                   sx={{ border: "1px solid black", textAlign: "center" }}
 //                 >
-//                   الحصة {8 - index}
+//                   الحصة {index + 1}
 //                 </TableCell>
 //               </Tooltip>
 //             ))}
@@ -197,28 +220,46 @@ export default NodesTable;
 //                 </Tooltip>
 //               </TableCell>
 //               {[...Array(8)].map((_, i) => {
-//                 const period = `الحصة ${8 - i}`;
-//                 const lesson = schedule?.lesson.find(
-//                   (lesson) => lesson.day === day && lesson.period === 8 - i
-//                 );
-
-//                 const noteData2 = lesson
-//                   ? generateNoteDisplay(lesson.notes)
-//                   : null;
-//                 let noteData = noteData2 ? noteData2 : null;
-
+//                 const period = i + 1;
+//                 const key = `${day}-${period}`;
+//                 const noteData = notes[key];
+//                 let title = schedule?.lessons
+//                   .map((e) =>
+//                     e.day ===
+//                       getEnglishDay(
+//                         day as
+//                           | "الأحد"
+//                           | "الاثنين"
+//                           | "الثلاثاء"
+//                           | "الأربعاء"
+//                           | "الخميس"
+//                       ) && e.period === +period
+//                       ? e
+//                       : null
+//                   )
+//                   .filter((e) => e !== null)[0]?.title;
 //                 return (
 //                   <TableCell
-//                     sx={{ border: "1px solid black", textAlign: "center" }}
+//                     sx={{
+//                       border: "1px solid black",
+//                       textAlign: "center",
+//                       cursor: "pointer",
+//                     }}
 //                     className={"max-w-24"}
 //                     key={period}
+//                     onClick={() => handleCellClick(day, `${period}`)}
 //                   >
-//                     <Tooltip title={noteData ? "" : "اضغط لإدخال ملاحظة"} arrow>
-//                       <Box
-//                         onClick={() => handleCellClick(day, period)}
-//                         sx={{ cursor: "pointer" }}
-//                         className={"max-w-24"}
-//                       >
+//                     {title && (
+//                       <Typography className=" font-bold text-[23px] text-center w-full ">
+//                         {title}
+//                       </Typography>
+//                     )}
+//                     <Tooltip
+//                       title={noteData ? "" : "اضغط لإدخال ملاحظة"}
+//                       className="w-full"
+//                       arrow
+//                     >
+//                       <Box className={"max-w-24 w-full"}>
 //                         {noteData ? (
 //                           <Box
 //                             display="flex"
@@ -235,9 +276,9 @@ export default NodesTable;
 //                                     : ""
 //                                 }`}
 //                                 arrow
-//                             >
+//                               >
 //                                 <Box
-//                                 sx={{
+//                                   sx={{
 //                                     width: 13,
 //                                     height: 13,
 //                                     borderRadius: "20%",

@@ -8,7 +8,12 @@ import {
   Typography,
 } from "@mui/material";
 import { ArrowBack, ArrowForward } from "@mui/icons-material";
-import { buttonStyles, getNoteColor } from "@/constants";
+import {
+  buttonStyles,
+  getEnglishDay,
+  getNoteColor,
+  mapStatusToOptions,
+} from "@/constants";
 import NodesTable from "./NodesTable";
 import DialogNode from "./DialogNode";
 import SchoolWeekDates from "./SchoolWeekDates";
@@ -40,26 +45,34 @@ const AddNotes = ({
   setDuration,
   selectedTeacher,
   setDuration2,
+  setDuration3,
   selectedTeacher2,
   setSelectedTeacher2,
-  handelNotesUnderTable,
+  setSelectedOptions,
+  title,
+  setTitle,
+  duration3,
 }: {
   TeacherId: string | null;
   setSTART_END_WEEK: ({ start, end }: { start: Date; end: Date }) => void;
   open: boolean;
   setOpen: (_: boolean) => void;
   handleSaveNote: () => void;
+  setSelectedOptions: (s: string[]) => void;
   setSelectedNotes: (s: string[]) => void;
+  title: string;
   duration: string;
   duration2: string;
+  duration3: string;
   selectedTeacher: string;
   selectedTeacher2: string;
   customNote: string;
-  handelNotesUnderTable: (s: string) => void;
+  setTitle: (s: string) => void;
   setSelectedTeacher2: (s: string) => void;
   setCustomNote: (s: string) => void;
   setDuration: (s: string) => void;
   setDuration2: (s: string) => void;
+  setDuration3: (s: string) => void;
   notes: {
     [key: string]: { text: string[]; colors: string[]; durations?: string[] };
   };
@@ -72,16 +85,53 @@ const AddNotes = ({
   teachers: any[];
   selectedCell: { day: string; period: string } | null;
   setSelectedCell: ({ day, period }: { day: string; period: string }) => void;
-  schedule: { teacher: ITeacher; weekStartDate: Date; lesson: Lesson[] } | null;
+  schedule: {
+    teacher: ITeacher;
+    weekStartDate: Date;
+    lessons: Lesson[];
+  } | null;
 }) => {
   const handleCellClick = (day: string, period: string) => {
     setSelectedCell({ day, period });
     setOpen(true);
     setDuration("");
-    setCustomNote("");
-    setSelectedNotes(
-      notes && notes[`${day}-${period}`] ? notes[`${day}-${period}`]?.text : []
-    );
+    let indexBlue = notes[`${day}-${period}`]?.colors.indexOf("blue");
+    let notes1 =
+      notes && notes[`${day}-${period}`] ? notes[`${day}-${period}`]?.text : [];
+    let notes2 = notes1.length > 0 ? notes1[indexBlue] : "";
+    let notes3 = notes1.filter((e) => e !== notes2);
+    setSelectedNotes(notes3);
+    let stutes1 = schedule?.lessons
+      .map((e) =>
+        e.day ===
+          getEnglishDay(
+            day as "الأحد" | "الاثنين" | "الثلاثاء" | "الأربعاء" | "الخميس"
+          ) && e.period === +period
+          ? e
+          : null
+      )
+      .filter((e) => e !== null)[0];
+    let stutes = stutes1?.notes;
+    let stutes2 = {
+      missedStandby: stutes?.missedStandby,
+      enteredStandby: stutes?.enteredStandby as string | undefined,
+      lateForWork: stutes?.lateForWork,
+      didNotActivateSupervision: stutes?.didNotActivateSupervision,
+      leftSchool: stutes?.leftSchool,
+    };
+    stutes?.enteredStandby
+      ? setSelectedTeacher2(`${stutes?.enteredStandby}`)
+      : null;
+    stutes?.late?.isLate ? setDuration(`${stutes?.late.duration}`) : null;
+    stutes?.earlyLeave?.leftEarly
+      ? setDuration2(`${stutes?.earlyLeave.remainingTime}`)
+      : null;
+    stutes?.lateForWork?.isLate
+      ? setDuration3(`${stutes?.lateForWork.duration}`)
+      : null;
+    setCustomNote(notes2);
+    setSelectedOptions(mapStatusToOptions(stutes2));
+    stutes1?.title ? setTitle(stutes1.title) : setTitle("");
   };
 
   const options = [
@@ -93,22 +143,27 @@ const AddNotes = ({
   ];
 
   return (
-    <Grid item xs={12} md={10}>
+    <Grid item xs={12} md={12}>
       <Box display="flex" gap={2} my={2}>
         {[
-          "غائب",
-          "متأخر",
-          "خروج مبكر",
-          "لم يرسل خطة أسبوعية",
-          "لم يحضر الدرس",
+          "غائب", // Absent
+          "متأخر", // Late
+          "خروج مبكر", // Early Leave
+          "لم يرسل خطة أسبوعية", // Didn't send weekly plan
+          "لم يحضر الدرس", // Missed the lesson
+          "لم يدخل الانتظار", // Missed standby
+          "دخل الانتظار عن", // Entered standby
+          "متأخر عن الدوام", // Late for work
+          "لم يفعل الإشراف", // Didn't activate supervision
+          "خروج من المدرسة", // Left school
         ].map((note) => (
           <Box key={note} display="flex" alignItems="center" gap={1}>
             <Box
               sx={{
-                width: 12,
-                height: 12,
+                width: 13,
+                height: 13,
+                borderRadius: "20%",
                 backgroundColor: getNoteColor(note),
-                borderRadius: "50%",
               }}
             />
             <Typography variant="body2">{note}</Typography>
@@ -117,10 +172,10 @@ const AddNotes = ({
         <Box display="flex" alignItems="center" gap={1}>
           <Box
             sx={{
-              width: 12,
-              height: 12,
+              width: 13,
+              height: 13,
+              borderRadius: "20%",
               backgroundColor: "blue",
-              borderRadius: "50%",
             }}
           />
           <Typography variant="body2">الملاحظات</Typography>
@@ -142,13 +197,13 @@ const AddNotes = ({
         />
         <FormControl variant="outlined" sx={{ width: "150px" }}>
           {/* <InputLabel>اختر المعلم</InputLabel> */}
-          <div className="select-container px-1 pr-0 ">
+          <div className="select-container px-1 pr-0 min-w-52">
             <select
               value={selectedTeacher!}
               onChange={(e) => {
                 handleSelectTeacher(e.target.value);
               }}
-              className="custom-select  flex-grow mx-2 h-full"
+              className="custom-select  flex-grow mx-2 h-full cursor-pointer "
               style={{
                 padding: "4px",
                 borderRadius: "8px",
@@ -190,7 +245,11 @@ const AddNotes = ({
       />
 
       {/* Multi-Select Options */}
-      <div className="flex items-center gap-3 mt-3">
+      <div
+        className={`flex items-center gap-3 mt-3 ${
+          open ? "fixed bottom-20 z-[100000000] right-5 w-full" : "hidden"
+        }`}
+      >
         {options.map((option, index) => (
           <div
             key={index}
@@ -244,9 +303,11 @@ const AddNotes = ({
               </div>
             ) : option === "متأخر عن الدوام" ? (
               <input
-                type="text"
+                type="number"
                 placeholder="المده"
-                className="mr-2 w-20 text-center"
+                value={duration3}
+                onChange={(e) => setDuration3(e.target.value)}
+                className="mr-2 w-20 text-center z-[4444444444444]"
               />
             ) : (
               ""
@@ -260,6 +321,8 @@ const AddNotes = ({
         duration={duration}
         duration2={duration2}
         customNote={customNote}
+        title={title}
+        setTitle={setTitle}
         open={open}
         handleClose={handleClose}
         handleNoteChange={handleNoteChange}

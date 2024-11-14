@@ -4,19 +4,11 @@ import { Box, Button, Tooltip } from "@mui/material";
 import axios from "axios";
 import Grid from "@mui/material/Grid";
 import Grid2 from "@mui/material/Grid2";
-import {
-  buttonStyles,
-  generateLessonNotes,
-  generateNoteDisplay,
-  getArabicDay,
-  getEnglishDay,
-  getNoteColor,
-} from "@/constants";
+import { buttonStyles } from "@/constants";
 import { useRouter, useSearchParams } from "next/navigation";
 import AddNotes from "@/components/shared/AddNotes";
 import { ITeacher } from "@/lib/models/Teacher";
 import { Lesson } from "@/lib/models/WeeklySchedule";
-import { toast } from "react-toastify";
 import { handleSaveNoteHandler } from "@/hook/notesFunctions";
 import { handleSelectTeacherHandler } from "@/hook/teacherFunctions";
 const Dashboard = () => {
@@ -26,13 +18,6 @@ const Dashboard = () => {
   sunday.setDate(today.getDate() - dayOfWeek + 0 * 7);
   const thursday = new Date(sunday);
   thursday.setDate(sunday.getDate() + 4);
-  const options: Intl.DateTimeFormatOptions = {
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-  };
-  const start = sunday.toLocaleDateString("en-US", options);
-  const end = thursday.toLocaleDateString("en-US", options);
   let search = useSearchParams();
   let TeacherId = search.get("id");
   const [open, setOpen] = useState(false);
@@ -47,33 +32,26 @@ const Dashboard = () => {
   const [schedule, setSchedule] = useState<{
     teacher: ITeacher;
     weekStartDate: Date;
-    lesson: Lesson[];
+    lessons: Lesson[];
   } | null>(null);
   const [selectedNotes, setSelectedNotes] = useState<string[]>([]);
   const [customNote, setCustomNote] = useState<string>(""); // State for custom note
-  const [duration, setDuration] = useState<string>("");
-  const [duration2, setDuration2] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
+  const [rund, setRund] = useState<number>();
+  const [duration, setDuration] = useState<string>("0");
+  const [duration2, setDuration2] = useState<string>("0");
+  const [duration3, setDuration3] = useState<string>("0");
   const [notes, setNotes] = useState<{
     [key: string]: { text: string[]; colors: string[]; durations?: string[] };
   }>({});
   let router = useRouter();
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]); // State for multi-option selection
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [teachers, setTeachers] = useState([]);
   const [selectedTeacher, setSelectedTeacher] = useState("");
   const [selectedTeacher2, setSelectedTeacher2] = useState("");
-  const [loading, setLoading] = useState(false);
-  const optionsUnderTable = [
-    "لم يدخل الانتظار",
-    "دخل الانتظار عن",
-    "متأخر عن الدوام",
-    "لم يفعل الإشراف",
-    "خروج من المدرسة",
-  ];
   useEffect(() => {
-    setLoading(true);
     axios.get("/api/teachers").then((response) => {
       setTeachers(response.data);
-      setLoading(false);
     });
   }, []);
 
@@ -98,6 +76,7 @@ const Dashboard = () => {
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!
   //???????????????????????????
   const handleSaveNote = async () => {
+    console.log(selectedNotes);
     await handleSaveNoteHandler(
       selectedTeacher,
       selectedNotes,
@@ -111,8 +90,12 @@ const Dashboard = () => {
       setSelectedNotes,
       setCustomNote,
       setDuration,
-      setDuration2
+      setDuration2,
+      title,
+      duration3
     );
+    setSelectedOptions([]);
+    setRund(Math.random());
   };
 
   const handleSelectTeacher = async (id: string) => {
@@ -130,7 +113,6 @@ const Dashboard = () => {
     setSelectedNotes(event.target.value as string[]);
   };
 
-  const handelNotesUnderTable = (options: string) => {};
   const handelSubmit = (e: any) => {
     e.preventDefault();
   };
@@ -139,8 +121,7 @@ const Dashboard = () => {
   }, [TeacherId]);
   useEffect(() => {
     selectedTeacher && handleSelectTeacher(selectedTeacher);
-  }, [START_END_WEEK]);
-
+  }, [START_END_WEEK, rund]);
   return (
     <Box sx={{ padding: "0px 20px 20px 20px", height: "100vh" }}>
       <Grid container className={` -translate-y-20 p-0 `}>
@@ -151,17 +132,20 @@ const Dashboard = () => {
         </Grid2>
       </Grid>
       <Grid container spacing={2}>
-        {/* Legend */}
         <AddNotes
-          handelNotesUnderTable={handelNotesUnderTable}
           selectedTeacher2={selectedTeacher2}
           setSelectedTeacher2={setSelectedTeacher2}
+          setSelectedOptions={setSelectedOptions}
           selectedTeacher={selectedTeacher}
           customNote={customNote}
+          title={title}
+          setTitle={setTitle}
           duration={duration}
           duration2={duration2}
+          duration3={duration3}
           setDuration={setDuration}
           setDuration2={setDuration2}
+          setDuration3={setDuration3}
           setCustomNote={setCustomNote}
           schedule={schedule}
           selectedCell={selectedCell}
@@ -183,8 +167,8 @@ const Dashboard = () => {
           selectedOptions={selectedOptions}
           handleSaveNote={handleSaveNote}
         />
-        <Grid item xs={12} md={2}>
-          <Box display="flex" flexDirection="column" gap={1}>
+        <Grid item xs={12} md={12}>
+          <Box display="flex" justifyContent={"space-evenly"} gap={1}>
             <Tooltip title="حفظ">
               <Button
                 variant="contained"

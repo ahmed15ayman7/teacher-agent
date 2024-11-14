@@ -3,6 +3,7 @@ import mongoose, { Document, Schema, Model } from "mongoose";
 export interface Lesson {
   period: number;
   day: "Sunday" | "Monday" | "Tuesday" | "Wednesday" | "Thursday";
+  title: string;
   notes: {
     absent?: boolean;
     late?: { isLate: boolean; duration: number };
@@ -11,9 +12,10 @@ export interface Lesson {
     missedLesson?: boolean;
     missedStandby?: boolean;
     enteredStandby?: mongoose.Types.ObjectId;
-    lateForWork?: boolean;
+    lateForWork?: { isLate: boolean; duration: number };
     didNotActivateSupervision?: boolean;
     leftSchool?: boolean;
+    note: string;
   };
 }
 
@@ -30,6 +32,7 @@ const lessonSchema = new Schema<Lesson>({
     enum: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"],
     required: true,
   },
+  title: { type: String },
   notes: {
     absent: { type: Boolean, default: false },
     note: { type: String },
@@ -49,7 +52,10 @@ const lessonSchema = new Schema<Lesson>({
       ref: "Teacher",
       default: null,
     },
-    lateForWork: { type: Boolean, default: false },
+    lateForWork: {
+      isLate: { type: Boolean, default: false },
+      duration: { type: Number, default: 0 },
+    },
     didNotActivateSupervision: { type: Boolean, default: false },
     leftSchool: { type: Boolean, default: false },
   },

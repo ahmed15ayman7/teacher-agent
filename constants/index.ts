@@ -15,10 +15,21 @@ export const getNoteColor = (note: string) => {
       return "#e1e80d";
     case "لم يحضر الدرس":
       return "green";
+    case "لم يدخل الانتظار":
+      return "#FFD700"; // gold
+    case "دخل الانتظار عن":
+      return "#078199"; // teal
+    case "متأخر عن الدوام":
+      return "#AA14DC"; // crimson
+    case "لم يفعل الإشراف":
+      return "#1E90FF"; // blue
+    case "خروج من المدرسة":
+      return "#D25656"; // brown
     default:
       return "";
   }
 };
+
 export const generateNoteDisplay = (notes: Lesson["notes"]) => {
   const text: string[] = [];
   const colors: string[] = [];
@@ -26,58 +37,55 @@ export const generateNoteDisplay = (notes: Lesson["notes"]) => {
 
   if (notes.absent) {
     text.push("غائب");
-    colors.push("#FF0000"); // red
+    colors.push("red");
   }
   if (notes.late?.isLate) {
     text.push("متأخر");
-    colors.push("#FFA500"); // orange
+    colors.push("orange");
     durations.push(notes.late.duration.toString());
   }
   if (notes.earlyLeave?.leftEarly) {
     text.push("خروج مبكر");
-    colors.push("cyan"); // dark orange
+    colors.push("cyan");
     durations.push(notes.earlyLeave.remainingTime.toString());
   }
   if (notes.didNotSendWeeklyPlan) {
     text.push("لم يرسل خطة أسبوعية");
-    colors.push("#e1e80d"); // pink
+    colors.push("#e1e80d");
   }
   if (notes.missedLesson) {
     text.push("لم يحضر الدرس");
-    colors.push("green"); // purple
+    colors.push("green");
   }
   if (notes.missedStandby) {
-    text.push("Missed standby");
+    text.push("لم يدخل الانتظار");
     colors.push("#FFD700"); // gold
   }
   if (notes.enteredStandby) {
-    text.push("Entered standby");
-    colors.push("#008000"); // green
+    text.push("دخل الانتظار عن");
+    colors.push("#078199"); // teal
   }
-  if (notes.lateForWork) {
-    text.push("Late for work");
-    colors.push("#DC143C"); // crimson
+  if (notes.lateForWork?.isLate) {
+    text.push("متأخر عن الدوام");
+    colors.push("#AA14DC"); // crimson
+    durations.push(notes.lateForWork.duration.toString());
   }
   if (notes.didNotActivateSupervision) {
-    text.push("Did not activate supervision");
+    text.push("لم يفعل الإشراف");
     colors.push("#1E90FF"); // blue
   }
   if (notes.leftSchool) {
-    text.push("Left school");
-    colors.push("#A52A2A"); // brown
+    text.push("خروج من المدرسة");
+    colors.push("#D25656"); // brown
+  }
+  if (notes.note) {
+    text.push(`${notes.note}`);
+    colors.push("blue"); // blue
   }
 
   return { text, colors, durations };
 };
 
-interface LessonNotes {
-  absent?: boolean;
-  note?: string;
-  late?: { isLate: boolean; duration: number };
-  earlyLeave?: { leftEarly: boolean; remainingTime: number };
-  didNotSendWeeklyPlan?: boolean;
-  missedLesson?: boolean;
-}
 export function getEnglishDay(
   arabicDay: "الأحد" | "الاثنين" | "الثلاثاء" | "الأربعاء" | "الخميس"
 ) {
@@ -105,34 +113,110 @@ export function getArabicDay(
   return dayMapping[EnDay] || "Invalid day";
 }
 
-export function generateLessonNotes(
+interface CombinedNotesAndStatus {
+  // LessonNotes properties
+  absent?: boolean;
+  note?: string;
+  late?: { isLate: boolean; duration: number };
+  earlyLeave?: { leftEarly: boolean; remainingTime: number };
+  didNotSendWeeklyPlan?: boolean;
+  missedLesson?: boolean;
+
+  // StatusObject properties
+  missedStandby?: boolean;
+  enteredStandby?: string;
+  lateForWork?: { isLate: boolean; duration: number };
+  didNotActivateSupervision?: boolean;
+  leftSchool?: boolean;
+}
+
+export function generateCombinedNotesAndStatus(
   options: string[],
+  TID: string,
   duration: number = 0,
-  duration2: number = 0
-): LessonNotes {
-  const notes: LessonNotes = {};
+  duration2: number = 0,
+  duration3: number = 0
+): CombinedNotesAndStatus {
+  const combined: CombinedNotesAndStatus = {};
 
   options.forEach((option) => {
     switch (option) {
+      // LessonNotes cases
       case "غائب":
-        notes.absent = true;
+        combined.absent = true;
         break;
       case "متأخر":
-        notes.late = { isLate: true, duration };
+        combined.late = duration ? { isLate: true, duration } : undefined;
         break;
       case "خروج مبكر":
-        notes.earlyLeave = { leftEarly: true, remainingTime: duration2 };
+        combined.earlyLeave = duration2
+          ? { leftEarly: true, remainingTime: duration2 }
+          : undefined;
         break;
       case "لم يرسل خطة أسبوعية":
-        notes.didNotSendWeeklyPlan = true;
+        combined.didNotSendWeeklyPlan = true;
         break;
       case "لم يحضر الدرس":
-        notes.missedLesson = true;
+        combined.missedLesson = true;
         break;
+
+      // StatusObject cases
+      case "لم يدخل الانتظار":
+        combined.missedStandby = true;
+        break;
+      case "دخل الانتظار عن":
+        combined.enteredStandby = TID || undefined;
+        break;
+      case "متأخر عن الدوام":
+        combined.lateForWork = duration3
+          ? { isLate: true, duration: duration3 }
+          : undefined;
+        break;
+      case "لم يفعل الإشراف":
+        combined.didNotActivateSupervision = true;
+        break;
+      case "خروج من المدرسة":
+        combined.leftSchool = true;
+        break;
+
+      // Default case for any other notes
       default:
-        notes.note = option;
+        if (!combined.note) {
+          combined.note = option;
+        }
+        break;
     }
   });
 
-  return notes;
+  return combined;
+}
+
+type StatusObject = {
+  missedStandby?: boolean;
+  enteredStandby?: string;
+  lateForWork?: { isLate: boolean; duration: number };
+  didNotActivateSupervision?: boolean;
+  leftSchool?: boolean;
+};
+
+export function mapStatusToOptions(status: StatusObject): string[] {
+  const options: string[] = [];
+
+  if (status.missedStandby) {
+    options.push("لم يدخل الانتظار");
+  }
+  if (status.enteredStandby) {
+    options.push("دخل الانتظار عن");
+  }
+  if (status.lateForWork?.isLate) {
+    options.push("متأخر عن الدوام");
+  }
+  if (status.didNotActivateSupervision) {
+    options.push("لم يفعل الإشراف");
+  }
+  if (status.leftSchool) {
+    options.push("خروج من المدرسة");
+  }
+
+  return options;
 }

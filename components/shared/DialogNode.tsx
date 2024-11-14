@@ -28,6 +28,8 @@ const DialogNode = ({
   customNote,
   setCustomNote,
   open,
+  title,
+  setTitle,
 }: {
   open: boolean;
   handleSaveNote: () => void;
@@ -35,11 +37,13 @@ const DialogNode = ({
   selectedCell: { day: string; period: string };
   selectedNotes: string[];
   handleNoteChange: (event: any) => void;
+  title: string;
   duration: string;
   duration2: string;
   setDuration: (t: string) => void;
   setDuration2: (t: string) => void;
   customNote: string;
+  setTitle: (s: string) => void;
   setCustomNote: (s: string) => void;
 }) => {
   let options = [
@@ -52,16 +56,30 @@ const DialogNode = ({
   let SelectedNotesRender = selectedNotes.filter((note) =>
     options.includes(note)
   );
-  useEffect(() => {
-    setCustomNote(selectedNotes.filter((note) => !options.includes(note))[0]);
-  }, [selectedNotes]);
 
   return (
     <Dialog open={open} onClose={handleClose}>
       <DialogTitle>إدخال الملاحظات</DialogTitle>
       <DialogContent className="flex gap-3 flex-col">
-        <Typography>اليوم: {selectedCell?.day}</Typography>
-        <Typography>الحصة: {selectedCell?.period}</Typography>
+        <div className="flex justify-evenly">
+          <Typography>اليوم: {selectedCell?.day}</Typography>
+          <Typography>الحصة: {selectedCell?.period}</Typography>
+        </div>
+        <FormControl fullWidth>
+          <TextField
+            label=" اضافة عنوان "
+            variant="outlined"
+            sx={{
+              "& .MuiInputLabel-root": {
+                color: "#006d4e", // تغيير لون التسمية (label)
+              },
+              color: "#000",
+            }}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)} // Update custom note state
+            fullWidth
+          />
+        </FormControl>
         <FormControl fullWidth>
           <InputLabel>اختر الملاحظات</InputLabel>
           <Select
@@ -85,51 +103,59 @@ const DialogNode = ({
             ))}
           </Select>
         </FormControl>
-        {selectedNotes.includes("متأخر") && (
+        <div className="flex gap-2">
+          {selectedNotes.includes("متأخر") && (
+            <FormControl fullWidth>
+              <TextField
+                label="المدة (دقائق) - متأخر"
+                type="number"
+                sx={{
+                  "& .MuiInputLabel-root": {
+                    color: "#006d4e", // تغيير لون التسمية (label)
+                  },
+                  color: "#000",
+                }}
+                variant="outlined"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                fullWidth
+              />
+            </FormControl>
+          )}
+          {selectedNotes.includes("خروج مبكر") && (
+            <FormControl fullWidth>
+              <TextField
+                label="المدة (دقائق) - خروج مبكر"
+                type="number"
+                variant="outlined"
+                sx={{
+                  "& .MuiInputLabel-root": {
+                    color: "#006d4e", // تغيير لون التسمية (label)
+                  },
+                  color: "#000",
+                }}
+                value={duration2}
+                onChange={(e) => setDuration2(e.target.value)}
+                fullWidth
+              />
+            </FormControl>
+          )}
+        </div>
+        <FormControl fullWidth>
           <TextField
-            label="المدة (دقائق) - متأخر"
-            type="number"
+            label=" اضافة ملاحظة "
+            variant="outlined"
             sx={{
               "& .MuiInputLabel-root": {
                 color: "#006d4e", // تغيير لون التسمية (label)
               },
               color: "#000",
             }}
-            variant="outlined"
-            value={duration}
-            onChange={(e) => setDuration(e.target.value)}
+            value={customNote}
+            onChange={(e) => setCustomNote(e.target.value)} // Update custom note state
             fullWidth
           />
-        )}
-        {selectedNotes.includes("خروج مبكر") && (
-          <TextField
-            label="المدة (دقائق) - خروج مبكر"
-            type="number"
-            variant="outlined"
-            sx={{
-              "& .MuiInputLabel-root": {
-                color: "#006d4e", // تغيير لون التسمية (label)
-              },
-              color: "#000",
-            }}
-            value={duration2}
-            onChange={(e) => setDuration2(e.target.value)}
-            fullWidth
-          />
-        )}
-        <TextField
-          label=" اضافة ملاحظة "
-          variant="outlined"
-          sx={{
-            "& .MuiInputLabel-root": {
-              color: "#006d4e", // تغيير لون التسمية (label)
-            },
-            color: "#000",
-          }}
-          value={customNote}
-          onChange={(e) => setCustomNote(e.target.value)} // Update custom note state
-          fullWidth
-        />
+        </FormControl>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} color="primary">
