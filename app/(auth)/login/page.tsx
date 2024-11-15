@@ -34,7 +34,7 @@ const LoginPage = () => {
           autoClose: 3000,
         });
         reset();
-        router.replace("/");
+        router.push("/");
       } else {
       }
     } catch (error: any) {
