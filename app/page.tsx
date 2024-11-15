@@ -12,8 +12,6 @@ const MenuButtons = () => {
   const handleRoute = (path: string) => {
     router.push(path);
   };
-
-  // Tailwind gradient styles for buttons
   const buttonStyles =
     "w-full py-2 my-2 text-white font-bold rounded-lg bg-gradient-to-r from-green-700 to-blue-900 hover:from-green-800 hover:to-blue-800 shadow-md shadow-blue-500/50";
   let { data: SchoolData, isLoading } = useQuery({
@@ -32,36 +30,42 @@ const MenuButtons = () => {
         <div className="grid grid-cols-2 gap-4">
           {/* Buttons with routing */}
           <Button
+            variant="contained"
             className={buttonStyles}
             onClick={() => handleRoute("/prepare-program")}
           >
             إعداد البرنامج
           </Button>
           <Button
+            variant="contained"
             className={buttonStyles}
             onClick={() => handleRoute("/general-schedule")}
           >
             استعراض الجدول العام
           </Button>
           <Button
+            variant="contained"
             className={buttonStyles}
             onClick={() => handleRoute("/teacher-info")}
           >
             استعراض بيانات معلم
           </Button>
           <Button
+            variant="contained"
             className={buttonStyles}
             onClick={() => handleRoute("/add-notes")}
           >
             إدخال الملاحظات
           </Button>
           <Button
+            variant="contained"
             className={buttonStyles}
             onClick={() => handleRoute("/send-reports")}
           >
             إرسال التقارير
           </Button>
           <Button
+            variant="contained"
             className={buttonStyles}
             onClick={() => handleRoute("/support-forms")}
           >
@@ -69,11 +73,16 @@ const MenuButtons = () => {
           </Button>
         </div>
         <div className="flex justify-center mt-6 gap-36">
-          <Button className={buttonStyles} onClick={() => handleRoute("/save")}>
+          <Button
+            className={buttonStyles}
+            variant="contained"
+            onClick={() => handleRoute("/save")}
+          >
             حفظ
           </Button>
           <Button
             className={buttonStyles}
+            variant="contained"
             onClick={async () => {
               await setSchoolData();
               handleRoute("/login");
