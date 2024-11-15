@@ -75,7 +75,7 @@ const LoginPage = () => {
               />
             )}
           />
-          <Button type="submit" className={buttonStyles}>
+          <Button type="submit" variant="contained" className={buttonStyles}>
             دخول
           </Button>
         </form>
