@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import WeeklySchedule from "@/lib/models/WeeklySchedule"; // Adjust this path as needed
+import WeeklySchedule, { Lesson } from "@/lib/models/WeeklySchedule"; // Adjust this path as needed
 import { connectDB } from "@/mongoose";
 
 export async function POST(req: Request) {
@@ -14,20 +14,103 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-
-    // Find the schedule document for the given teacher and week start date
     let weeklySchedule = await WeeklySchedule.findOne({
       teacher: teacherId,
       weekStartDate: new Date(weekStartDate),
     });
-
     if (!weeklySchedule) {
       weeklySchedule = new WeeklySchedule({
         teacher: teacherId,
         weekStartDate: new Date(weekStartDate),
         lessons: [lesson],
       });
+      if ((lesson as Lesson).notes.enteredStandby) {
+        let weeklySchedule2 = await WeeklySchedule.findOne({
+          teacher: (lesson as Lesson).notes.enteredStandby,
+          weekStartDate: new Date(weekStartDate),
+        });
+        let notes = (lesson as Lesson).notes;
+        let Les: Lesson = {
+          notes: {
+            ...notes,
+            waitingDone: teacherId,
+            enteredStandby: undefined,
+          },
+          period: (lesson as Lesson).period,
+          day: (lesson as Lesson).day,
+          title: "أنتظار",
+        };
+        if (!weeklySchedule2) {
+          weeklySchedule2 = new WeeklySchedule({
+            teacher: (lesson as Lesson).notes.enteredStandby,
+            weekStartDate: new Date(weekStartDate),
+            lessons: [Les],
+          });
+        } else {
+          let isLessonFind = weeklySchedule.lessons.some(
+            (e) => e.day === Les.day && e.period === Les.period
+          );
+
+          if (isLessonFind) {
+            // If the lesson exists, update it
+            weeklySchedule2.lessons = weeklySchedule2.lessons.map((e) => {
+              if (e.day === Les.day && e.period === Les.period) {
+                // Update the existing lesson with the new lesson data
+                return { ...e, ...Les }; // This will overwrite the existing lesson with the new one
+              }
+              return e; // Keep other lessons unchanged
+            });
+          } else {
+            // If the lesson does not exist, add it
+            weeklySchedule2.lessons.push(lesson);
+          }
+        }
+        await weeklySchedule2.save();
+      }
     } else {
+      if ((lesson as Lesson).notes.enteredStandby) {
+        let weeklySchedule2 = await WeeklySchedule.findOne({
+          teacher: (lesson as Lesson).notes.enteredStandby,
+          weekStartDate: new Date(weekStartDate),
+        });
+        let notes = (lesson as Lesson).notes;
+        let Les: Lesson = {
+          notes: {
+            ...notes,
+            waitingDone: teacherId,
+            enteredStandby: undefined,
+          },
+          period: (lesson as Lesson).period,
+          day: (lesson as Lesson).day,
+          title: "أنتظار",
+        };
+        if (!weeklySchedule2) {
+          weeklySchedule2 = new WeeklySchedule({
+            teacher: (lesson as Lesson).notes.enteredStandby,
+            weekStartDate: new Date(weekStartDate),
+            lessons: [Les],
+          });
+        } else {
+          let isLessonFind = weeklySchedule.lessons.some(
+            (e) => e.day === Les.day && e.period === Les.period
+          );
+
+          if (isLessonFind) {
+            // If the lesson exists, update it
+            weeklySchedule2.lessons = weeklySchedule2.lessons.map((e) => {
+              if (e.day === Les.day && e.period === Les.period) {
+                // Update the existing lesson with the new lesson data
+                return { ...e, ...Les }; // This will overwrite the existing lesson with the new one
+              }
+              return e; // Keep other lessons unchanged
+            });
+          } else {
+            // If the lesson does not exist, add it
+            weeklySchedule2.lessons.push(lesson);
+          }
+        }
+        await weeklySchedule2.save();
+      }
       let isLessonFind = weeklySchedule.lessons.some(
         (e) => e.day === lesson.day && e.period === lesson.period
       );

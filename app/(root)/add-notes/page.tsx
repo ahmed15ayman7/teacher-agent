@@ -18,13 +18,13 @@ const Dashboard = () => {
   sunday.setDate(today.getDate() - dayOfWeek + 0 * 7);
   const thursday = new Date(sunday);
   thursday.setDate(sunday.getDate() + 4);
-  let search = useSearchParams();
-  let TeacherId = search.get("id");
-  const [open, setOpen] = useState(false);
   const [START_END_WEEK, setSTART_END_WEEK] = useState<{
     start: Date;
     end: Date;
   }>({ start: sunday, end: thursday });
+  let search = useSearchParams();
+  let TeacherId = search.get("id");
+  const [open, setOpen] = useState(false);
   const [selectedCell, setSelectedCell] = useState<{
     day: string;
     period: string;
@@ -34,19 +34,19 @@ const Dashboard = () => {
     weekStartDate: Date;
     lessons: Lesson[];
   } | null>(null);
+  const [teachers, setTeachers] = useState([]);
   const [selectedNotes, setSelectedNotes] = useState<string[]>([]);
   const [customNote, setCustomNote] = useState<string>(""); // State for custom note
   const [title, setTitle] = useState<string>("");
   const [rund, setRund] = useState<number>();
-  const [duration, setDuration] = useState<string>("0");
-  const [duration2, setDuration2] = useState<string>("0");
-  const [duration3, setDuration3] = useState<string>("0");
+  const [duration, setDuration] = useState<string>("");
+  const [duration2, setDuration2] = useState<string>("");
+  const [duration3, setDuration3] = useState<string>("");
   const [notes, setNotes] = useState<{
     [key: string]: { text: string[]; colors: string[]; durations?: string[] };
   }>({});
   let router = useRouter();
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [teachers, setTeachers] = useState([]);
   const [selectedTeacher, setSelectedTeacher] = useState("");
   const [selectedTeacher2, setSelectedTeacher2] = useState("");
   useEffect(() => {
@@ -79,7 +79,7 @@ const Dashboard = () => {
     console.log(selectedNotes);
     await handleSaveNoteHandler(
       selectedTeacher,
-      selectedNotes,
+      [...selectedNotes, ...selectedOptions],
       customNote,
       duration,
       duration2,
@@ -92,7 +92,8 @@ const Dashboard = () => {
       setDuration,
       setDuration2,
       title,
-      duration3
+      duration3,
+      selectedTeacher2
     );
     setSelectedOptions([]);
     setRund(Math.random());
@@ -122,6 +123,10 @@ const Dashboard = () => {
   useEffect(() => {
     selectedTeacher && handleSelectTeacher(selectedTeacher);
   }, [START_END_WEEK, rund]);
+  useEffect(() => {
+    console.log(selectedOptions);
+  }, [selectedOptions]);
+  console.log(notes);
   return (
     <Box sx={{ padding: "0px 20px 20px 20px", height: "100vh" }}>
       <Grid container className={` -translate-y-20 p-0 `}>

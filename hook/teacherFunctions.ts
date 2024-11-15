@@ -3,6 +3,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 import { getArabicDay, generateNoteDisplay } from "@/constants";
+import { Lesson } from "@/lib/models/WeeklySchedule";
 
 export const handleSelectTeacherHandler = async (
   id: string,
@@ -38,8 +39,10 @@ export const handleSelectTeacherHandler = async (
       };
     } = {};
 
-    fetchedSchedule?.lessons.forEach((lesson: any) => {
+    fetchedSchedule?.lessons.forEach((lesson: Lesson) => {
+      console.log(lesson.notes);
       const note = generateNoteDisplay(lesson.notes);
+      console.log(note);
       const key = `${getArabicDay(lesson.day)}-${lesson.period}`;
       updatedNotes[key] = note;
     });

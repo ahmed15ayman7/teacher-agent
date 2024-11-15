@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Lalezar&family=Rakkas&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Lalezar&family=Rakkas&display=swap");
 
 :root {
   --background: #ffffff;
@@ -24,7 +24,6 @@ body {
   "Lalezar",
    Arial , Helvetica, */
 }
-
 
 @layer utilities {
   .text-balance {
@@ -105,4 +104,36 @@ body {
   outline: 2px solid #006d4e;
   border-color: #006d4e;
   /* تغيير لون الحدود عند التركيز */
+}
+
+@media print {
+  .bg,
+  .leftBs {
+    display: none;
+  }
+
+  /* إظهار الرأس فقط */
+  .print {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100% !important;
+    height: 100vh;
+    overflow: scroll;
+  }
+  .cd {
+    background: #e3f2fd !important;
+    color: #000 !important;
+  }
+  .cdt {
+    background: #007bff !important;
+    color: #000 !important;
+  }
+  .cR {
+    background: #4caf50 !important;
+    color: #000 !important;
+  }
 }

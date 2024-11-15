@@ -1,4 +1,179 @@
 import { Lesson } from "@/lib/models/WeeklySchedule";
+import ExcelJS from "exceljs";
+export type notesTypy =
+  | "name"
+  | "lessonCount"
+  | "DoneCount"
+  | "absentCount"
+  | "lateCount"
+  | "totalLateDuration"
+  | "earlyLeaveCount"
+  | "totalEarlyLeaveDuration"
+  | "didNotActivateSupervisionCount"
+  | "waitingDone"
+  | "didNotSendWeeklyPlanCount"
+  | "missedLessonCount"
+  | "missedStandbyCount"
+  | "enteredStandbyCount"
+  | "lateForWorkCount"
+  | "totalLateForWorkDuration"
+  | "leftSchoolCount"
+  | "TeacherWaitDone"
+  | "TeacherWaitPaidDone";
+
+// دالة لفصل الأسماء في حالة وجود أكثر من اسم
+const splitNames = (names: string) => {
+  return names.split(",").map((name) => name.trim());
+};
+
+export const exportToExcel = async (
+  notes: {
+    [teacherName: string]: {
+      lateCount: number;
+      totalLateDuration: number;
+      earlyLeaveCount: number;
+      totalEarlyLeaveDuration: number;
+      absentCount: number;
+      didNotSendWeeklyPlanCount: number;
+      missedLessonCount: number;
+      missedStandbyCount: number;
+      enteredStandbyCount: number;
+      lateForWorkCount: number;
+      totalLateForWorkDuration: number;
+      didNotActivateSupervisionCount: number;
+      leftSchoolCount: number;
+    };
+  },
+  teacherName: string,
+  startDate: string,
+  endDate: string
+) => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("تقرير");
+
+  // إعداد عنوان التقرير مع استخدام نمط تعبئة "pattern"
+  worksheet.mergeCells("A1:C1");
+  const titleCell = worksheet.getCell("A1");
+  titleCell.value = `تقرير أداء المعلم`;
+  titleCell.font = { size: 20, bold: true, color: { argb: "FFFFFFFF" } };
+
+  titleCell.alignment = { horizontal: "center", vertical: "middle" };
+  titleCell.fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "4CAF50" }, // اللون الأخضر
+  };
+
+  worksheet.getCell("B22").value = "تاريخ البداية";
+  worksheet.getCell("B23").value = startDate;
+  worksheet.getCell("C22").value = "تاريخ النهاية";
+  worksheet.getCell("C23").value = endDate;
+  worksheet.getCell("B22").font = { bold: true, color: { argb: "FFFFFFFF" } };
+  worksheet.getCell("B22").alignment = { horizontal: "center" };
+  worksheet.getCell("B22").fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "007BFF" }, // اللون الأزرق
+  };
+  worksheet.getCell("C22").font = { bold: true, color: { argb: "FFFFFFFF" } };
+  worksheet.getCell("C22").alignment = { horizontal: "center" };
+  worksheet.getCell("C22").fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "007BFF" }, // اللون الأزرق
+  };
+  // إضافة معلومات المعلم
+  const teacherNames = splitNames(teacherName); // فصل الأسماء إذا كانت هناك أكثر من اسم
+  if (teacherNames.length === 1) {
+    worksheet.getCell("A3").value = "اسم المعلم";
+    worksheet.getCell("A4").value = teacherNames[0];
+  } else {
+    worksheet.getCell("A3").value = "أسماء المعلمين";
+    teacherNames.forEach((name, index) => {
+      worksheet.getCell(`A${4 + index}`).value = name;
+    });
+  }
+  worksheet.getCell("A3").font = { bold: true, color: { argb: "FFFFFFFF" } };
+  worksheet.getCell("A3").alignment = { horizontal: "center" };
+  worksheet.getCell("A3").fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "4CAF50" }, // اللون الأزرق
+  };
+  // إضافة رؤوس الجدول
+  worksheet.getCell("B3").value = "البيان";
+  worksheet.getCell("C3").value = "القيمة";
+  worksheet.getCell("C3").font = { bold: true, color: { argb: "FFFFFFFF" } };
+  worksheet.getCell("B3").font = { bold: true, color: { argb: "FFFFFFFF" } };
+  worksheet.getCell("B3").alignment = { horizontal: "center" };
+  worksheet.getCell("C3").alignment = { horizontal: "center" };
+  worksheet.getCell("B3").fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "007BFF" }, // اللون الأزرق
+  };
+  worksheet.getCell("C3").fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "007BFF" }, // اللون الأزرق
+  };
+
+  // إضافة بيانات الملاحظات
+  let rowIndex = 5;
+  Object.entries(notes).forEach(([key, value]) => {
+    worksheet.getCell(`B${rowIndex}`).value = getLabel(key as notesTypy);
+    worksheet.getCell(`C${rowIndex}`).value = `${value}`;
+    worksheet.getCell(`B${rowIndex}`).alignment = { horizontal: "center" };
+    worksheet.getCell(`C${rowIndex}`).alignment = { horizontal: "center" };
+
+    // إضافة حدود للخلايا
+    worksheet.getCell(`B${rowIndex}`).border = {
+      top: { style: "thin", color: { argb: "CCCCCC" } },
+      left: { style: "thin", color: { argb: "CCCCCC" } },
+      bottom: { style: "thin", color: { argb: "CCCCCC" } },
+      right: { style: "thin", color: { argb: "CCCCCC" } },
+    };
+    worksheet.getCell(`C${rowIndex}`).border = {
+      top: { style: "thin", color: { argb: "CCCCCC" } },
+      left: { style: "thin", color: { argb: "CCCCCC" } },
+      bottom: { style: "thin", color: { argb: "CCCCCC" } },
+      right: { style: "thin", color: { argb: "CCCCCC" } },
+    };
+
+    // تغيير اللون الخلفي لكل سطر
+    if (rowIndex % 2 === 0) {
+      worksheet.getCell(`B${rowIndex}`).fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "F2F2F2" }, // خلفية رمادي فاتح للصفوف الزوجية
+      };
+      worksheet.getCell(`C${rowIndex}`).fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "F2F2F2" }, // خلفية رمادي فاتح للصفوف الزوجية
+      };
+    }
+
+    rowIndex++;
+  });
+
+  // تعديل عرض الأعمدة
+  worksheet.getColumn(1).width = 30;
+  worksheet.getColumn(2).width = 30; // توسيع عمود البيانات
+  worksheet.getColumn(3).width = 15; // توسيع عمود القيم
+
+  // حفظ الملف
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${teacherNames[0].slice(0, 50)}_تقرير_الأسبوع.xlsx`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+};
 
 export const buttonStyles =
   "w-full py-2 my-2 text-white font-bold rounded-lg bg-gradient-to-r from-green-700 to-blue-900 hover:from-green-800 hover:to-blue-800 shadow-md shadow-blue-500/50";
@@ -59,11 +234,15 @@ export const generateNoteDisplay = (notes: Lesson["notes"]) => {
   }
   if (notes.missedStandby) {
     text.push("لم يدخل الانتظار");
-    colors.push("#FFD700"); // gold
+    colors.push("#F0C907FF"); // gold
   }
   if (notes.enteredStandby) {
     text.push("دخل الانتظار عن");
     colors.push("#078199"); // teal
+  }
+  if (notes.waitingDone) {
+    text.push("الانتظار");
+    colors.push("#F1FD03FF"); // teal
   }
   if (notes.lateForWork?.isLate) {
     text.push("متأخر عن الدوام");
@@ -219,4 +398,122 @@ export function mapStatusToOptions(status: StatusObject): string[] {
   }
 
   return options;
+}
+
+export function calculateStatistics(lessons: Lesson[]) {
+  // Initialize counters
+  let lateCount = 0;
+  let totalLateDuration = 0;
+  let earlyLeaveCount = 0;
+  let totalEarlyLeaveDuration = 0;
+  let absentCount = 0;
+  let didNotSendWeeklyPlanCount = 0;
+  let missedLessonCount = 0;
+  let missedStandbyCount = 0;
+  let enteredStandbyCount = 0;
+  let lateForWorkCount = 0;
+  let totalLateForWorkDuration = 0;
+  let didNotActivateSupervisionCount = 0;
+  let leftSchoolCount = 0;
+  let TeacherWaitPaidDone = [];
+  let TeacherWaitDone = [];
+
+  // Iterate through each lesson to count occurrences and sum durations
+  for (const lesson of lessons) {
+    const notes = lesson.notes;
+
+    if (notes.late?.isLate) {
+      lateCount++;
+      totalLateDuration += notes.late.duration;
+    }
+
+    if (notes.earlyLeave?.leftEarly) {
+      earlyLeaveCount++;
+      totalEarlyLeaveDuration += notes.earlyLeave.remainingTime;
+    }
+
+    if (notes.absent) {
+      absentCount++;
+    }
+
+    if (notes.didNotSendWeeklyPlan) {
+      didNotSendWeeklyPlanCount++;
+    }
+
+    if (notes.missedLesson) {
+      missedLessonCount++;
+    }
+
+    if (notes.missedStandby) {
+      missedStandbyCount++;
+    }
+
+    if (notes.enteredStandby) {
+      enteredStandbyCount++;
+      TeacherWaitDone.push(notes.enteredStandby.toString());
+    }
+    if (notes.waitingDone) {
+      TeacherWaitPaidDone.push(notes.waitingDone.toString());
+    }
+
+    if (notes.lateForWork?.isLate) {
+      lateForWorkCount++;
+      totalLateForWorkDuration += notes.lateForWork.duration;
+    }
+
+    if (notes.didNotActivateSupervision) {
+      didNotActivateSupervisionCount++;
+    }
+
+    if (notes.leftSchool) {
+      leftSchoolCount++;
+    }
+  }
+
+  // Return an object with the calculated statistics
+  return {
+    lateCount,
+    totalLateDuration,
+    earlyLeaveCount,
+    totalEarlyLeaveDuration,
+    absentCount,
+    didNotSendWeeklyPlanCount,
+    missedLessonCount,
+    missedStandbyCount,
+    enteredStandbyCount,
+    lateForWorkCount,
+    totalLateForWorkDuration,
+    didNotActivateSupervisionCount,
+    leftSchoolCount,
+    DoneCount: lessons.length - absentCount,
+    TeacherWaitDone,
+    TeacherWaitPaidDone,
+    waitingDone: TeacherWaitPaidDone.length,
+  };
+}
+
+export function getLabel(key: notesTypy) {
+  const labels = {
+    name: "إسم المعلم ",
+    lessonCount: " عدد الحصص",
+    DoneCount: "حصص أداها",
+    absentCount: "حصص غاب عنها ",
+    lateCount: "حصص تأخر عنها",
+    totalLateDuration: "مجموع  التأخير عن الحصص (د) ",
+    earlyLeaveCount: "خروج مبكر من الحصص",
+    totalEarlyLeaveDuration: "  مجموع مدة الخروج المبكر (د)",
+    didNotActivateSupervisionCount: " عدم تفعيل الإشراف",
+    waitingDone: "اداء الانتظار",
+    didNotSendWeeklyPlanCount: " عدم إرسال الخطة ",
+    missedLessonCount: " الحصص التي لم يحضرها",
+    missedStandbyCount: "حصص انتظار اديت عنه",
+    enteredStandbyCount: " الحصص الاحتياطية التي دخلها",
+    lateForWorkCount: " التأخر عن الدوام",
+    totalLateForWorkDuration: "   مجموع التأخر عن الدوام (د)",
+    leftSchoolCount: " المغادرة من المدرسة",
+    TeacherWaitDone: "المعلمون الذين أدوا عنك الانتظار",
+    TeacherWaitPaidDone: "المعلمون الذين أديت عنهم الانتظار",
+  };
+
+  return labels[key] || key;
 }

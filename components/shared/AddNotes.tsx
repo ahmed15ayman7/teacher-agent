@@ -4,6 +4,7 @@ import {
   Button,
   FormControl,
   Grid,
+  TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -302,12 +303,21 @@ const AddNotes = ({
                 <span className="custom-icon">▼</span>
               </div>
             ) : option === "متأخر عن الدوام" ? (
-              <input
+              <TextField
+                placeholder="المدة (دقائق) "
                 type="number"
-                placeholder="المده"
+                variant="outlined"
+                sx={{
+                  "& .MuiInputLabel-root": {
+                    color: "#006d4e", // تغيير لون التسمية (label)
+                  },
+                  color: "#000",
+                  padding: "1px",
+                  width: "100px",
+                }}
                 value={duration3}
                 onChange={(e) => setDuration3(e.target.value)}
-                className="mr-2 w-20 text-center z-[4444444444444]"
+                fullWidth
               />
             ) : (
               ""

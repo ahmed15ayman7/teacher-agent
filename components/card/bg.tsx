@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function Background() {
   return (
-    <div className="relative w-full h-48 flex items-center justify-center overflow-hidden">
+    <div className="bg relative w-full h-48 flex items-center justify-center overflow-hidden">
       {/* Top Curved Shape */}
       <div
         className="middle-curve absolute top-20 w-full h-24 bg-gray-700"

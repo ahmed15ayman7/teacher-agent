@@ -23,7 +23,8 @@ export const handleSaveNoteHandler = async (
   setDuration: React.Dispatch<React.SetStateAction<string>>,
   setDuration2: React.Dispatch<React.SetStateAction<string>>,
   title: string,
-  duration3: string
+  duration3: string,
+  selectedTeacher2: string
 ) => {
   const toastId = toast.loading("جاري حفظ الملاحظات");
   if (selectedTeacher) {
@@ -50,7 +51,7 @@ export const handleSaveNoteHandler = async (
 
       let notes2 = generateCombinedNotesAndStatus(
         selectedNotes,
-        selectedTeacher,
+        selectedTeacher2,
         +duration,
         +duration2,
         +duration3
@@ -68,6 +69,7 @@ export const handleSaveNoteHandler = async (
         notes: { ...notes2, note: customNote },
         title: title,
       };
+      console.log(lesson);
       let startWeek = START_END_WEEK.start.toLocaleDateString("en-US", {
         year: "numeric",
         month: "numeric",

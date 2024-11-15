@@ -12,6 +12,7 @@ export interface Lesson {
     missedLesson?: boolean;
     missedStandby?: boolean;
     enteredStandby?: mongoose.Types.ObjectId;
+    waitingDone?: mongoose.Types.ObjectId;
     lateForWork?: { isLate: boolean; duration: number };
     didNotActivateSupervision?: boolean;
     leftSchool?: boolean;
@@ -48,6 +49,11 @@ const lessonSchema = new Schema<Lesson>({
     missedLesson: { type: Boolean, default: false },
     missedStandby: { type: Boolean, default: false },
     enteredStandby: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Teacher",
+      default: null,
+    },
+    waitingDone: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Teacher",
       default: null,
