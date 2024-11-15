@@ -1,20 +1,26 @@
-"use server"
+"use server";
 import { cookies } from "next/headers";
 
-export async function getUserData() {
-    const cookieStore = cookies();
-    const userDataCookie = cookieStore.get('userData');
-    
-    // console.error("iiiiiiiiiiiii-----",userDataCookie)
-    if (userDataCookie) {
-      try {
-        const userData = JSON.parse(userDataCookie.value);
-        // console.log(userData)
-        return userData;
-      } catch (error) {
-        console.error('Error parsing user data cookie:', error);
-      }
+export async function getSchoolData() {
+  const cookieStore = cookies();
+  const SchoolDataCookie = cookieStore.get("SchoolData");
+
+  // console.error("iiiiiiiiiiiii-----",SchoolDataCookie)
+  if (SchoolDataCookie) {
+    try {
+      const SchoolData = JSON.parse(SchoolDataCookie.value);
+      // console.log(SchoolData)
+      return SchoolData;
+    } catch (error) {
+      console.error("Error parsing School data cookie:", error);
     }
-    return null;
   }
-  
+  return null;
+}
+export async function setSchoolData() {
+  const cookieStore = cookies();
+  cookieStore.delete("SchoolData");
+  cookieStore.delete("authTokenSchool");
+
+  return null;
+}
