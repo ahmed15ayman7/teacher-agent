@@ -12,7 +12,6 @@ const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters long"),
 });
 type LoginSchema = z.infer<typeof loginSchema>;
-let router = useRouter();
 const LoginPage = () => {
   const { control, handleSubmit, reset } = useForm({
     resolver: zodResolver(loginSchema),
@@ -20,6 +19,7 @@ const LoginPage = () => {
       password: "",
     },
   });
+  let router = useRouter();
   const onSubmit = async (data: LoginSchema) => {
     const toastId = toast.loading("جاري حفظ الملاحظات");
     try {
