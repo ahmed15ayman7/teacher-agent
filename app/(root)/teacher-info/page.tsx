@@ -48,30 +48,30 @@ type TeacherFormInputs = z.infer<typeof teacherSchema>;
 
 const TeacherForm = () => {
   const { control, handleSubmit, setValue, reset, getValues } =
-  useForm<TeacherFormInputs>({
-    resolver: zodResolver(teacherSchema),
-    defaultValues: {
-      teacherId: "",
-      // name: "",
-      specialization: "",
-      civilRecord: "",
-      sessionCount: 0,
-      phoneNumber: "",
-      teachingStage: undefined,
-      birthDate: "",
-      supervisionDay: "",
-      qualification: "",
-      TeachingMaterials: "",
-      CorrespondenceEmail: "",
-      OtherTasksAssigned: "",
-      SupervisionPlace: "",
-      ClassesTaught: "",
-    },
-  });
+    useForm<TeacherFormInputs>({
+      resolver: zodResolver(teacherSchema),
+      defaultValues: {
+        teacherId: "",
+        // name: "",
+        specialization: "",
+        civilRecord: "",
+        sessionCount: 0,
+        phoneNumber: "",
+        teachingStage: undefined,
+        birthDate: "",
+        supervisionDay: "",
+        qualification: "",
+        TeachingMaterials: "",
+        CorrespondenceEmail: "",
+        OtherTasksAssigned: "",
+        SupervisionPlace: "",
+        ClassesTaught: "",
+      },
+    });
   const [teachers, setTeachers] = useState([]);
   const [selectedTeacher, setSelectedTeacher] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   let { data: SchoolData, isLoading } = useQuery({
     queryKey: ["SchoolData"],
     queryFn: () => getSchoolData(),
@@ -105,6 +105,19 @@ const TeacherForm = () => {
     router.back();
   };
 
+  const handleButtonClick = (action: string) => {
+    switch (action) {
+      case "طباعة التقرير":
+        window.print();
+        break;
+      case "تنزيل التقرير":
+        break;
+
+      default:
+        console.warn("Unknown action:", action);
+    }
+  };
+
   return (
     <Box
       component="form"
@@ -112,7 +125,7 @@ const TeacherForm = () => {
       onSubmit={handleSubmit(onSubmit)}
       sx={{ p: 2 }}
     >
-      <Grid container className={` -translate-y-20 p-0 `}>
+      <Grid container className={` -translate-y-20 p-0 leftBs`}>
         <Grid2 size={{ md: 2, sm: 4, xs: 4 }}>
           <p className={`${buttonStyles} text-center  px-5 `}>
             {" "}
@@ -120,7 +133,7 @@ const TeacherForm = () => {
           </p>
         </Grid2>
       </Grid>
-      <Grid container spacing={2}>
+      <Grid container spacing={2} className="print">
         <Grid item xs={12} md={10}>
           <Grid container spacing={2}>
             <Grid
@@ -446,7 +459,7 @@ const TeacherForm = () => {
         </Grid>
 
         {/* Button Section - 2 columns */}
-        <Grid item xs={12} md={2}>
+        <Grid item xs={12} md={2} className="leftBs">
           <Box display="flex" flexDirection="column" gap={1}>
             <Tooltip title="إضافة معلم">
               <Link href={"/add-teacher"}>
@@ -455,6 +468,20 @@ const TeacherForm = () => {
                 </Button>
               </Link>
             </Tooltip>
+            <Button
+              variant="contained"
+              className={buttonStyles}
+              onClick={(e) => handleButtonClick("طباعة التقرير")}
+            >
+              طباعة
+            </Button>
+            <Button
+              variant="contained"
+              className={buttonStyles}
+              onClick={(e) => handleButtonClick("تنزيل التقرير")}
+            >
+              تنزيل
+            </Button>
             <Tooltip title="تعديل">
               <Button
                 variant="contained"
