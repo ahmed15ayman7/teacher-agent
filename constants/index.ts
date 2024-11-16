@@ -1,3 +1,4 @@
+import HijriDate from "hijri-date";
 import { Lesson } from "@/lib/models/WeeklySchedule";
 import ExcelJS from "exceljs";
 export type notesTypy =
@@ -517,3 +518,215 @@ export function getLabel(key: notesTypy) {
 
   return labels[key] || key;
 }
+
+export function getTime(): string {
+  const now = new Date();
+
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const seconds = now.getSeconds();
+
+  // Format time to HH:mm:ss
+  const formattedTime = `${pad(hours)}:${pad(minutes)}`;
+
+  return formattedTime;
+}
+
+// Helper function to pad single-digit numbers with a leading zero
+function pad(num: number): string {
+  return num.toString().padStart(2, "0");
+}
+
+export function getDate(): string {
+  const now = new Date();
+
+  const day = pad(now.getDate());
+  const month = pad(now.getMonth() + 1); // Months are zero-indexed
+  const year = now.getFullYear();
+
+  // Format date as DD/MM/YYYY
+  const formattedDate = `${day}/${month}/${year}`;
+
+  return formattedDate;
+}
+export function getHijriDate(): string {
+  const hijriDate = new HijriDate();
+
+  const day = hijriDate.getDate();
+  const month = hijriDate.getMonth() + 1; // الأشهر تبدأ من 0
+  const year = hijriDate.getFullYear();
+
+  // تنسيق التاريخ الهجري
+  return `${day}/${month}/${year}`;
+}
+
+import { ITeacher } from "@/lib/models/Teacher";
+
+export const downloadTeachersExcel = async (
+  teachers: ITeacher[],
+  schoolData: {
+    schoolName: string;
+    principalName: string;
+    educationalSupervisor: string;
+  }
+) => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("بيانات المدرسة والمعلمين");
+
+  // إعداد الأنماط
+  const headerStyle = {
+    font: { bold: true, color: { argb: "FFFFFF" }, size: 14 },
+    alignment: {
+      vertical: "middle" as "middle",
+      horizontal: "center" as "center",
+    },
+  };
+
+  const subHeaderStyle = {
+    font: { bold: true, color: { argb: "FFFFFF" }, size: 12 },
+    alignment: {
+      vertical: "middle" as "middle",
+      horizontal: "center" as "center",
+    },
+  };
+
+  const cellStyle = {
+    alignment: {
+      vertical: "middle" as "middle",
+      horizontal: "center" as "center",
+    },
+  };
+  let tLen = teachers.length;
+  // إضافة بيانات المدرسة
+
+  // إضافة رؤوس الأعمدة
+  const headers = [
+    "الاسم",
+    "التخصص",
+    "رقم السجل المدني",
+    "عدد الجلسات",
+    "رقم الهاتف",
+    "مرحلة التدريس",
+    "تاريخ الميلاد",
+    "يوم الإشراف",
+    "المؤهل",
+    "مواد التدريس",
+    "البريد الإلكتروني",
+    "مهام أخرى",
+    "مكان الإشراف",
+    "الفصول التي يتم تدريسها",
+    "الجدول الأسبوعي",
+  ];
+
+  worksheet.columns = headers.map((header, index) => ({
+    header,
+    key: `col${index}`,
+    width: 20,
+  }));
+
+  // تعيين أنماط للرؤوس
+  worksheet.getRow(2).eachCell((cell) => {
+    cell.style = headerStyle;
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "1e7569" },
+    };
+  });
+
+  // إضافة بيانات المعلمين
+  teachers.forEach((teacher, index) => {
+    const row = worksheet.addRow([
+      teacher.name,
+      teacher.specialization,
+      teacher.civilRecord,
+      teacher.sessionCount,
+      teacher.phoneNumber,
+      teacher.teachingStage,
+      teacher.birthDate
+        ? new Date(teacher.birthDate).toLocaleDateString("ar-EG")
+        : "",
+      teacher.supervisionDay,
+      teacher.qualification,
+      teacher.TeachingMaterials,
+      teacher.CorrespondenceEmail,
+      teacher.OtherTasksAssigned,
+      teacher.SupervisionPlace,
+      teacher.ClassesTaught,
+      teacher.WeeklySchedule,
+    ]);
+
+    // استخدام لون مختلف لكل صف
+    const rowColor = index % 2 === 0 ? "DFF0D8" : "FFFFFF";
+    row.eachCell((cell) => {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: rowColor },
+      };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+      cell.style = cellStyle;
+    });
+  });
+  worksheet.mergeCells(`A${tLen + 6}:B${tLen + 6}`);
+  worksheet.getCell(
+    `A${tLen + 6}`
+  ).value = `بيانات المدرسة: ${schoolData.schoolName}`;
+  worksheet.getCell(`A${tLen + 6}`).style = subHeaderStyle;
+  worksheet.getCell(`A${tLen + 6}`).fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "1e7569" },
+  };
+
+  worksheet.mergeCells(`C${tLen + 6}:D${tLen + 6}`);
+  worksheet.getCell(
+    `C${tLen + 6}`
+  ).value = `اسم المدير: ${schoolData.principalName}`;
+  worksheet.getCell(`C${tLen + 6}`).style = subHeaderStyle;
+  worksheet.getCell(`C${tLen + 6}`).fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "1e7569" },
+  };
+
+  worksheet.mergeCells(`E${tLen + 6}:F${tLen + 6}`);
+  worksheet.getCell(
+    `E${tLen + 6}`
+  ).value = `وكيل الشؤون التعليمية: ${schoolData.educationalSupervisor}`;
+  worksheet.getCell(`E${tLen + 6}`).style = subHeaderStyle;
+  worksheet.getCell(`E${tLen + 6}`).fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "1e7569" },
+  };
+
+  worksheet.mergeCells(`G${tLen + 6}:H${tLen + 6}`);
+  worksheet.getCell(
+    `G${tLen + 6}`
+  ).value = `تاريخ اليوم: ${new Date().toLocaleDateString("ar-EG")}`;
+  worksheet.getCell(`G${tLen + 6}`).style = subHeaderStyle;
+  worksheet.getCell(`G${tLen + 6}`).fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "1e7569" },
+  };
+
+  worksheet.addRow([]); // سطر فارغ للفصل بين البيانات والمدرسين
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${schoolData.schoolName}_بيانات_المعلمين.xlsx`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+};

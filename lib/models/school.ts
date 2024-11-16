@@ -31,6 +31,12 @@ const SchoolSchema: Schema = new mongoose.Schema(
     dateM: { type: String, required: true },
     dateH: { type: String, required: true },
     password: { type: String, required: true },
+    teachers: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Teacher",
+      },
+    ],
   },
   { timestamps: true }
 );

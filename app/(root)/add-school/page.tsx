@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -18,21 +18,12 @@ import { SchoolSchema, schoolSchema } from "@/lib/schema/school";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import {
-  buttonStyles,
-  downloadTeachersExcel,
-  getDate,
-  getHijriDate,
-  getTime,
-} from "@/constants";
-import { useQuery } from "@tanstack/react-query";
-import { getSchoolData, setSchoolData2 } from "@/lib/actions/user.action";
+import { buttonStyles, getDate, getHijriDate, getTime } from "@/constants";
 
 const FormComponent: React.FC = () => {
   const {
     handleSubmit,
     control,
-    setValue,
     reset,
     formState: { errors },
   } = useForm<SchoolSchema>({
@@ -53,37 +44,24 @@ const FormComponent: React.FC = () => {
     },
   });
   let router = useRouter();
-  let { data: SchoolData, isLoading } = useQuery({
-    queryKey: ["SchoolData"],
-    queryFn: () => getSchoolData(),
-  });
-  useEffect(() => {
-    !isLoading && reset({ ...SchoolData });
-  }, [SchoolData]);
 
-  const buttonStyles2 =
-    "w-full py-3 my-2 text-gray-900 font-bold rounded-lg bg-gray-100 hover:from-green-800  shadow-md shadow-gray-500/50";
   const onSubmit = async (data: SchoolSchema) => {
     const toastId = toast.loading("جارٍ إضافة المدرسة...");
 
     try {
-      const response = await axios.put("/api/school", {
+      const response = await axios.post("/api/school", {
         body: data,
-        _id: SchoolData._id,
       });
 
       if (response.status === 201) {
+        const result = await response.data;
         toast.update(toastId, {
-          render: "تمت اعداد المدرسة بنجاح!",
+          render: "تمت إضافة المدرسة بنجاح!",
           type: "success",
           isLoading: false,
           autoClose: 3000,
         });
-        let res2 = await axios.get(`/api/school?_id=${SchoolData._id}`);
-        if (res2.status === 200) {
-          await setSchoolData2(res2.data.data);
-          reset(res2.data.data);
-        }
+        reset();
       } else {
         toast.update(toastId, {
           render: "فشل في إضافة المدرسة.",
@@ -96,22 +74,13 @@ const FormComponent: React.FC = () => {
     } catch (error) {
       console.error(error);
       toast.update(toastId, {
-        render: "حدث خطأ أثناء الاعداد.",
+        render: "حدث خطأ أثناء الإضافة.",
         type: "error",
         isLoading: false,
         autoClose: 3000,
       });
     }
   };
-
-  async function downloadTeachers() {
-    let response = await axios.get(`/api/teachers?schoolId=${SchoolData._id}`);
-    downloadTeachersExcel(response.data, {
-      schoolName: SchoolData.schoolName,
-      principalName: SchoolData.principal,
-      educationalSupervisor: SchoolData.deputy,
-    });
-  }
 
   return (
     <form
@@ -122,12 +91,12 @@ const FormComponent: React.FC = () => {
         <Grid size={{ md: 2, sm: 4, xs: 4 }}>
           <p className={`${buttonStyles} text-center -translate-y-20 `}>
             {" "}
-            إعداد البرنامج
+            إضافة مدرسة
           </p>
         </Grid>
       </Grid>
       <Typography variant="h5" align="center" gutterBottom>
-        إعدادات المدرسة
+        إضافة المدرسة
       </Typography>
       <Grid container spacing={2}>
         <Grid size={{ md: 8, sm: 12, xs: 12 }}>
@@ -433,28 +402,6 @@ const FormComponent: React.FC = () => {
             fullWidth
           >
             عودة
-          </Button>
-        </Grid>
-
-        <Grid size={{ md: 4, sm: 12, xs: 12 }}>
-          <Button className={buttonStyles2} fullWidth>
-            اضغط هنا لتحميل الجدول العام إكسل
-          </Button>
-        </Grid>
-
-        <Grid size={{ md: 4, sm: 12, xs: 12 }}>
-          <Button
-            className={buttonStyles2}
-            fullWidth
-            onClick={() => downloadTeachers()}
-          >
-            اضغط هنا لتحميل بيانات المعلمين إكسل
-          </Button>
-        </Grid>
-
-        <Grid size={{ md: 4, sm: 12, xs: 12 }}>
-          <Button className={buttonStyles2} fullWidth>
-            اضغط هنا لتحميل جدول الانتظار الرسمي إكسل
           </Button>
         </Grid>
       </Grid>

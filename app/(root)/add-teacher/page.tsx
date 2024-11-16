@@ -23,11 +23,14 @@ import axios from "axios";
 import { buttonStyles } from "@/constants";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { useQuery } from "@tanstack/react-query";
+import { getSchoolData, setSchoolData2 } from "@/lib/actions/user.action";
 
 // Define Zod schema for form validation
 const teacherSchema = z.object({
   // teacherId: z.string().nonempty("Please select a teacher"),
   name: z.string().nonempty("الرجاء ادخال اسم المعلم"),
+  schoolId: z.string().nonempty("المدرسه"),
   specialization: z.string().optional(),
   civilRecord: z.string().optional(),
   sessionCount: z.string().optional(),
@@ -50,13 +53,15 @@ const TeacherForm = () => {
     control,
     handleSubmit,
     setValue,
+    getValues,
     reset,
     formState: { errors },
   } = useForm<TeacherFormInputs>({
     resolver: zodResolver(teacherSchema),
     defaultValues: {
-      // teacherId: "",
+      // d: "",
       name: "",
+      schoolId: "",
       specialization: "",
       civilRecord: "",
       sessionCount: "",
@@ -73,25 +78,31 @@ const TeacherForm = () => {
     },
   });
   let router = useRouter();
+  let { data: SchoolData, isLoading } = useQuery({
+    queryKey: ["SchoolData"],
+    queryFn: () => getSchoolData(),
+  });
   const onSubmit = async (data: TeacherFormInputs) => {
-    console.log("Form submitted with data:", data);
-    // Show loading toast
-    const loadingToastId = toast.loading("Adding teacher...");
+    const loadingToastId = toast.loading("جاري اضافة المعلم ...");
 
     try {
       await axios.post("/api/teachers", data);
       // Update the loading toast to success
       toast.update(loadingToastId, {
-        render: "Teacher added successfully!",
+        render: "تم اضافة المعلم بنجاح",
         type: "success",
         isLoading: false,
         autoClose: 3000,
       });
       reset();
-    } catch (error) {
+      let res2 = await axios.get(`/api/school?_id=${SchoolData._id}`);
+      if (res2.status === 200) {
+        await setSchoolData2(res2.data.data);
+      }
+    } catch (error: any) {
       // Update the loading toast to error
       toast.update(loadingToastId, {
-        render: "Failed to add teacher.",
+        render: `فشل اضافة المعلم .${error.message}`,
         type: "error",
         isLoading: false,
         autoClose: 3000,
@@ -103,6 +114,10 @@ const TeacherForm = () => {
     reset();
     router.back();
   };
+  console.log(SchoolData);
+  useEffect(() => {
+    !isLoading && setValue("schoolId", SchoolData._id);
+  }, [SchoolData, getValues("schoolId")]);
 
   return (
     <Box
@@ -118,6 +133,7 @@ const TeacherForm = () => {
       </Grid>
       <Grid container spacing={2}>
         <Grid item xs={12} md={10}>
+          <FormHelperText error>{errors.schoolId?.message}</FormHelperText>
           <Grid container spacing={2}>
             <Grid
               item

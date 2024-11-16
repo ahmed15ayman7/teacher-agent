@@ -4,6 +4,7 @@ import { Button } from "@mui/material";
 import { useRouter } from "next/navigation"; // Or use react-router-dom if not using Next.js
 import { useQuery } from "@tanstack/react-query";
 import { getSchoolData, setSchoolData } from "@/lib/actions/user.action";
+import { buttonStyles } from "@/constants";
 
 const MenuButtons = () => {
   const router = useRouter();
@@ -12,8 +13,7 @@ const MenuButtons = () => {
   const handleRoute = (path: string) => {
     router.push(path);
   };
-  const buttonStyles =
-    "w-full py-2 my-2 text-white font-bold rounded-lg bg-gradient-to-r from-green-700 to-blue-900 hover:from-green-800 hover:to-blue-800 shadow-md shadow-blue-500/50";
+
   let { data: SchoolData, isLoading } = useQuery({
     queryKey: ["SchoolData"],
     queryFn: () => getSchoolData(),

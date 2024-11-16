@@ -24,3 +24,9 @@ export async function setSchoolData() {
 
   return null;
 }
+export async function setSchoolData2(SchoolData: any) {
+  const cookieStore = cookies();
+  cookieStore.set("SchoolData", JSON.stringify(SchoolData));
+
+  return null;
+}

@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "كلمة السر خاطئة" }, { status: 400 });
     }
 
-    const SchoolData = await School.findOne({ password });
+    const SchoolData = await School.findOne({ password }).populate("teachers");
 
     if (!SchoolData) {
       return NextResponse.json({ message: "كلمة السر خاطئة" }, { status: 401 });

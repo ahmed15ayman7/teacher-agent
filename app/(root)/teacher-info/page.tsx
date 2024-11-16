@@ -1,8 +1,8 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import Link from 'next/link';
+import React, { useEffect, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import {
   Box,
   Button,
@@ -15,13 +15,15 @@ import {
   Radio,
   Tooltip,
   InputLabel,
-} from '@mui/material';
-import Grid from '@mui/material/Grid';
-import Grid2 from '@mui/material/Grid2';
-import { z } from 'zod';
-import axios from 'axios';
-import { buttonStyles } from '@/constants';
-import { useRouter } from 'next/navigation';
+} from "@mui/material";
+import Grid from "@mui/material/Grid";
+import Grid2 from "@mui/material/Grid2";
+import { z } from "zod";
+import axios from "axios";
+import { buttonStyles } from "@/constants";
+import { useRouter } from "next/navigation";
+import { getSchoolData } from "@/lib/actions/user.action";
+import { useQuery } from "@tanstack/react-query";
 
 // Define Zod schema for form validation
 const teacherSchema = z.object({
@@ -45,7 +47,8 @@ const teacherSchema = z.object({
 type TeacherFormInputs = z.infer<typeof teacherSchema>;
 
 const TeacherForm = () => {
-  const { control, handleSubmit, setValue, reset, getValues } = useForm<TeacherFormInputs>({
+  const { control, handleSubmit, setValue, reset, getValues } =
+  useForm<TeacherFormInputs>({
     resolver: zodResolver(teacherSchema),
     defaultValues: {
       teacherId: "",
@@ -62,52 +65,77 @@ const TeacherForm = () => {
       CorrespondenceEmail: "",
       OtherTasksAssigned: "",
       SupervisionPlace: "",
-      ClassesTaught: ""
-    }
+      ClassesTaught: "",
+    },
   });
   const [teachers, setTeachers] = useState([]);
   const [selectedTeacher, setSelectedTeacher] = useState("");
   const [loading, setLoading] = useState(false);
-
+  
+  let { data: SchoolData, isLoading } = useQuery({
+    queryKey: ["SchoolData"],
+    queryFn: () => getSchoolData(),
+  });
   useEffect(() => {
-    setLoading(true)
-    axios.get('/api/teachers').then(response => {
-      setTeachers(response.data)
-
-      setLoading(false)
-    });
-  }, []);
-  let router = useRouter()
+    setLoading(true);
+    !isLoading &&
+      axios.get(`/api/teachers?schoolId=${SchoolData._id}`).then((response) => {
+        setTeachers(response.data);
+        setLoading(false);
+      });
+  }, [SchoolData]);
+  let router = useRouter();
   const onSelectTeacher = async (teacherId: string) => {
     const teacherData = await axios.get(`/api/teachers/${teacherId}`);
     setSelectedTeacher(teacherData.data._id);
-    Object.keys(teacherData.data).forEach(key => {
+    Object.keys(teacherData.data).forEach((key) => {
       setValue(key as keyof TeacherFormInputs, teacherData.data[key]);
     });
   };
-  const buttonStyles2 = "w-full py-3 my-4  text-gray-900 font-bold rounded-lg bg-gray-100 hover:from-green-800  shadow-md shadow-gray-500/50";
+
+  const buttonStyles2 =
+    "w-full py-3 my-4  text-gray-900 font-bold rounded-lg bg-gray-100 hover:from-green-800  shadow-md shadow-gray-500/50";
   const onSubmit = (data: TeacherFormInputs) => {
-    console.log('Form submitted with data:', data);
+    console.log("Form submitted with data:", data);
   };
 
   const handleReset = () => {
     reset();
     setSelectedTeacher("");
-    router.back()
+    router.back();
   };
 
   return (
-    <Box component="form" className={` pt-0 `} onSubmit={handleSubmit(onSubmit)} sx={{ p: 2 }}>
-      <Grid container className={` -translate-y-20 p-0 `} >
+    <Box
+      component="form"
+      className={` pt-0 `}
+      onSubmit={handleSubmit(onSubmit)}
+      sx={{ p: 2 }}
+    >
+      <Grid container className={` -translate-y-20 p-0 `}>
         <Grid2 size={{ md: 2, sm: 4, xs: 4 }}>
-          <p className={`${buttonStyles} text-center  px-5 `}  > استعراض بيانات المعلم</p>
+          <p className={`${buttonStyles} text-center  px-5 `}>
+            {" "}
+            استعراض بيانات المعلم
+          </p>
         </Grid2>
       </Grid>
-      <Grid container spacing={2} >
+      <Grid container spacing={2}>
         <Grid item xs={12} md={10}>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6} className={"flex justify-between items-center"}>
-              <Typography variant="body1" className="flex-grow font-bold text-center" style={{ color: '#006d4e' }}>اختر المعلم</Typography>
+            <Grid
+              item
+              xs={12}
+              md={6}
+              className={"flex justify-between items-center"}
+            >
+              <Typography
+                variant="body1"
+                className="flex-grow font-bold text-center"
+                style={{ color: "#006d4e" }}
+              >
+                اختر المعلم
+              </Typography>
               <Controller
                 name="teacherId"
                 control={control}
@@ -121,17 +149,17 @@ const TeacherForm = () => {
                       }}
                       className="custom-select flex-grow mx-2 h-full"
                       style={{
-                        padding: '8px',
-                        borderRadius: '8px',
-                        border: '1px solid #006d4e',
-                        backgroundColor: '#fff',
-                        color: '#000',
-                        width: '100%',
-                        height: '100%', // لجعل الارتفاع كامل
-                        appearance: 'none', // لإخفاء أيقونة السهم الافتراضية
-                        WebkitAppearance: 'none', // لإخفاء أيقونة السهم الافتراضية في سفاري
-                        MozAppearance: 'none', // لإخفاء أيقونة السهم الافتراضية في فايرفوكس
-                        paddingRight: '32px', // مساحة لعرض الأيقونة
+                        padding: "8px",
+                        borderRadius: "8px",
+                        border: "1px solid #006d4e",
+                        backgroundColor: "#fff",
+                        color: "#000",
+                        width: "100%",
+                        height: "100%", // لجعل الارتفاع كامل
+                        appearance: "none", // لإخفاء أيقونة السهم الافتراضية
+                        WebkitAppearance: "none", // لإخفاء أيقونة السهم الافتراضية في سفاري
+                        MozAppearance: "none", // لإخفاء أيقونة السهم الافتراضية في فايرفوكس
+                        paddingRight: "32px", // مساحة لعرض الأيقونة
                       }}
                     >
                       <option value="" disabled>
@@ -153,12 +181,17 @@ const TeacherForm = () => {
                 name="specialization"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} label="تخصص" sx={{
-                    '& .MuiInputLabel-root': {
-                      color: '#006d4e',
-                    },
-                    color: '#000',
-                  }} fullWidth />
+                  <TextField
+                    {...field}
+                    label="تخصص"
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: "#006d4e",
+                      },
+                      color: "#000",
+                    }}
+                    fullWidth
+                  />
                 )}
               />
             </Grid>
@@ -167,12 +200,17 @@ const TeacherForm = () => {
                 name="civilRecord"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} label=" سجله المدني " sx={{
-                    '& .MuiInputLabel-root': {
-                      color: '#006d4e', // تغيير لون التسمية (label)
-                    },
-                    color: '#000',
-                  }} fullWidth />
+                  <TextField
+                    {...field}
+                    label=" سجله المدني "
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: "#006d4e", // تغيير لون التسمية (label)
+                      },
+                      color: "#000",
+                    }}
+                    fullWidth
+                  />
                 )}
               />
             </Grid>
@@ -181,12 +219,18 @@ const TeacherForm = () => {
                 name="sessionCount"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} label="عدد الحصص" sx={{
-                    '& .MuiInputLabel-root': {
-                      color: '#006d4e', // تغيير لون التسمية (label)
-                    },
-                    color: '#000',
-                  }} fullWidth type="number" />
+                  <TextField
+                    {...field}
+                    label="عدد الحصص"
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: "#006d4e", // تغيير لون التسمية (label)
+                      },
+                      color: "#000",
+                    }}
+                    fullWidth
+                    type="number"
+                  />
                 )}
               />
             </Grid>
@@ -195,12 +239,17 @@ const TeacherForm = () => {
                 name="phoneNumber"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} label="رقم جواله" sx={{
-                    '& .MuiInputLabel-root': {
-                      color: '#006d4e', // تغيير لون التسمية (label)
-                    },
-                    color: '#000',
-                  }} fullWidth />
+                  <TextField
+                    {...field}
+                    label="رقم جواله"
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: "#006d4e", // تغيير لون التسمية (label)
+                      },
+                      color: "#000",
+                    }}
+                    fullWidth
+                  />
                 )}
               />
             </Grid>
@@ -211,9 +260,21 @@ const TeacherForm = () => {
                 control={control}
                 render={({ field }) => (
                   <RadioGroup row {...field}>
-                    <FormControlLabel value="primary" control={<Radio />} label="ابتدائي" />
-                    <FormControlLabel value="intermediate" control={<Radio />} label="متوسط" />
-                    <FormControlLabel value="secondary" control={<Radio />} label="ثانوي" />
+                    <FormControlLabel
+                      value="primary"
+                      control={<Radio />}
+                      label="ابتدائي"
+                    />
+                    <FormControlLabel
+                      value="intermediate"
+                      control={<Radio />}
+                      label="متوسط"
+                    />
+                    <FormControlLabel
+                      value="secondary"
+                      control={<Radio />}
+                      label="ثانوي"
+                    />
                   </RadioGroup>
                 )}
               />
@@ -223,12 +284,19 @@ const TeacherForm = () => {
                 name="birthDate"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} label="تاريخ الميلاد" type="date" sx={{
-                    '& .MuiInputLabel-root': {
-                      color: '#006d4e', // تغيير لون التسمية (label)
-                    },
-                    color: '#000',
-                  }} InputLabelProps={{ shrink: true }} fullWidth />
+                  <TextField
+                    {...field}
+                    label="تاريخ الميلاد"
+                    type="date"
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: "#006d4e", // تغيير لون التسمية (label)
+                      },
+                      color: "#000",
+                    }}
+                    InputLabelProps={{ shrink: true }}
+                    fullWidth
+                  />
                 )}
               />
             </Grid>
@@ -237,12 +305,17 @@ const TeacherForm = () => {
                 name="CorrespondenceEmail"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} sx={{
-                    '& .MuiInputLabel-root': {
-                      color: '#006d4e', // تغيير لون التسمية (label)
-                    },
-                    color: '#000',
-                  }} label="إيميل المراسلات" fullWidth />
+                  <TextField
+                    {...field}
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: "#006d4e", // تغيير لون التسمية (label)
+                      },
+                      color: "#000",
+                    }}
+                    label="إيميل المراسلات"
+                    fullWidth
+                  />
                 )}
               />
             </Grid>
@@ -251,12 +324,17 @@ const TeacherForm = () => {
                 name="supervisionDay"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} sx={{
-                    '& .MuiInputLabel-root': {
-                      color: '#006d4e', // تغيير لون التسمية (label)
-                    },
-                    color: '#000',
-                  }} label="يوم الإشراف" fullWidth />
+                  <TextField
+                    {...field}
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: "#006d4e", // تغيير لون التسمية (label)
+                      },
+                      color: "#000",
+                    }}
+                    label="يوم الإشراف"
+                    fullWidth
+                  />
                 )}
               />
             </Grid>
@@ -265,12 +343,17 @@ const TeacherForm = () => {
                 name="OtherTasksAssigned"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} sx={{
-                    '& .MuiInputLabel-root': {
-                      color: '#006d4e', // تغيير لون التسمية (label)
-                    },
-                    color: '#000',
-                  }} label=" أعمال أخرى مكلف بها" fullWidth />
+                  <TextField
+                    {...field}
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: "#006d4e", // تغيير لون التسمية (label)
+                      },
+                      color: "#000",
+                    }}
+                    label=" أعمال أخرى مكلف بها"
+                    fullWidth
+                  />
                 )}
               />
             </Grid>
@@ -279,12 +362,17 @@ const TeacherForm = () => {
                 name="qualification"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} sx={{
-                    '& .MuiInputLabel-root': {
-                      color: '#006d4e', // تغيير لون التسمية (label)
-                    },
-                    color: '#000',
-                  }} label="المؤهل" fullWidth />
+                  <TextField
+                    {...field}
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: "#006d4e", // تغيير لون التسمية (label)
+                      },
+                      color: "#000",
+                    }}
+                    label="المؤهل"
+                    fullWidth
+                  />
                 )}
               />
             </Grid>
@@ -293,12 +381,17 @@ const TeacherForm = () => {
                 name="SupervisionPlace"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} sx={{
-                    '& .MuiInputLabel-root': {
-                      color: '#006d4e', // تغيير لون التسمية (label)
-                    },
-                    color: '#000',
-                  }} label="مكان الإشراف" fullWidth />
+                  <TextField
+                    {...field}
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: "#006d4e", // تغيير لون التسمية (label)
+                      },
+                      color: "#000",
+                    }}
+                    label="مكان الإشراف"
+                    fullWidth
+                  />
                 )}
               />
             </Grid>
@@ -307,12 +400,17 @@ const TeacherForm = () => {
                 name="ClassesTaught"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} sx={{
-                    '& .MuiInputLabel-root': {
-                      color: '#006d4e', // تغيير لون التسمية (label)
-                    },
-                    color: '#000',
-                  }} label=" الصفوف التي يدرسها" fullWidth />
+                  <TextField
+                    {...field}
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: "#006d4e", // تغيير لون التسمية (label)
+                      },
+                      color: "#000",
+                    }}
+                    label=" الصفوف التي يدرسها"
+                    fullWidth
+                  />
                 )}
               />
             </Grid>
@@ -321,35 +419,57 @@ const TeacherForm = () => {
                 name="TeachingMaterials"
                 control={control}
                 render={({ field }) => (
-                  <TextField {...field} sx={{
-                    '& .MuiInputLabel-root': {
-                      color: '#006d4e', // تغيير لون التسمية (label)
-                    },
-                    color: '#000',
-                  }} label="مواد التدريس" fullWidth />
+                  <TextField
+                    {...field}
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: "#006d4e", // تغيير لون التسمية (label)
+                      },
+                      color: "#000",
+                    }}
+                    label="مواد التدريس"
+                    fullWidth
+                  />
                 )}
               />
             </Grid>
-            {selectedTeacher &&
+            {selectedTeacher && (
               <Grid xs={12} md={6}>
                 <Link href={`/add-notes?id=${selectedTeacher}`}>
-                  <Button className={buttonStyles2} fullWidth>اضغط هنا لاستعراض جدوله الدراسي</Button>
+                  <Button className={buttonStyles2} fullWidth>
+                    اضغط هنا لاستعراض جدوله الدراسي
+                  </Button>
                 </Link>
               </Grid>
-            }
+            )}
           </Grid>
         </Grid>
 
         {/* Button Section - 2 columns */}
         <Grid item xs={12} md={2}>
           <Box display="flex" flexDirection="column" gap={1}>
+            <Tooltip title="إضافة معلم">
+              <Link href={"/add-teacher"}>
+                <Button variant="contained" className={buttonStyles}>
+                  إضافة معلم
+                </Button>
+              </Link>
+            </Tooltip>
             <Tooltip title="تعديل">
-              <Button variant="contained" className={buttonStyles} type="submit">
+              <Button
+                variant="contained"
+                className={buttonStyles}
+                type="submit"
+              >
                 تعديل
               </Button>
             </Tooltip>
             <Tooltip title="عودة">
-              <Button variant="contained" className={buttonStyles} onClick={handleReset}>
+              <Button
+                variant="contained"
+                className={buttonStyles}
+                onClick={handleReset}
+              >
                 عودة
               </Button>
             </Tooltip>

@@ -11,6 +11,8 @@ import { ITeacher } from "@/lib/models/Teacher";
 import { Lesson } from "@/lib/models/WeeklySchedule";
 import { handleSaveNoteHandler } from "@/hook/notesFunctions";
 import { handleSelectTeacherHandler } from "@/hook/teacherFunctions";
+import { getSchoolData } from "@/lib/actions/user.action";
+import { useQuery } from "@tanstack/react-query";
 const Dashboard = () => {
   const today = new Date();
   const dayOfWeek = today.getDay();
@@ -49,12 +51,16 @@ const Dashboard = () => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectedTeacher, setSelectedTeacher] = useState("");
   const [selectedTeacher2, setSelectedTeacher2] = useState("");
+  let { data: SchoolData, isLoading } = useQuery({
+    queryKey: ["SchoolData"],
+    queryFn: () => getSchoolData(),
+  });
   useEffect(() => {
-    axios.get("/api/teachers").then((response) => {
-      setTeachers(response.data);
-    });
-  }, []);
-
+    !isLoading &&
+      axios.get(`/api/teachers?schoolId=${SchoolData._id}`).then((response) => {
+        setTeachers(response.data);
+      });
+  }, [SchoolData]);
   const handleOptionChange = (option: string) => {
     setSelectedOptions((prev) =>
       prev.includes(option)

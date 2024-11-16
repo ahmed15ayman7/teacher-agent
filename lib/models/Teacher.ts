@@ -15,9 +15,11 @@ export interface ITeacher {
   SupervisionPlace?: string;
   ClassesTaught?: string;
   WeeklySchedule?: string;
+  schoolId:string;
 }
 const TeacherSchema = new mongoose.Schema({
   name: { type: String, required: true },
+  schoolId: { type: String, required: true },
   specialization: { type: String, required: false },
   civilRecord: { type: String, required: false },
   sessionCount: { type: Number, required: false },

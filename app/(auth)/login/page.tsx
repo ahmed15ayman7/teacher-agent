@@ -2,11 +2,12 @@
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { TextField, Button, Box, Typography } from "@mui/material";
+import { Button } from "@mui/material";
 import { toast } from "react-toastify";
 import { buttonStyles } from "@/constants";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters long"),
@@ -45,7 +46,6 @@ const LoginPage = () => {
         autoClose: 3000,
       });
     }
-    // Handle login logic
   };
 
   return (
@@ -79,8 +79,14 @@ const LoginPage = () => {
             دخول
           </Button>
         </form>
-        <div className="text-center mt-4">
+        <div className="mt-4">
           {/* <a href="#" className="text-white hover:underline">Forgot password?</a> */}
+          <Link
+            href="/add-school"
+            className="text-1xl bg-gradient-to-r from-green-700 to-blue-900 hover:from-green-800 hover:to-blue-800 font-bold  mb-6 bg-clip-text text-transparent hover:underline hover:underline-gray-900"
+          >
+            إضافة مدرسة
+          </Link>
         </div>
       </div>
     </div>
