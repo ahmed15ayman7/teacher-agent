@@ -9,7 +9,11 @@ export async function GET(req: Request) {
     await connectDB();
     const { searchParams } = new URL(req.url);
     const schoolId = searchParams.get("schoolId");
-    const teachers = await Teacher.find({ schoolId });
+    const i = searchParams.get("i");
+    const teachers =
+      i === "1"
+        ? await Teacher.find({ schoolId }).populate("WeeklySchedule")
+        : await Teacher.find({ schoolId });
     return NextResponse.json(teachers);
   } catch (error: any) {
     return NextResponse.json({

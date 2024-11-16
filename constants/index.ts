@@ -29,139 +29,132 @@ const splitNames = (names: string) => {
 
 export const exportToExcel = async (
   notes: {
-    [teacherName: string]: {
+    [teacherId: string]: {
+      name: string;
+      lessonCount: number;
+      DoneCount: number;
+      absentCount: number;
       lateCount: number;
       totalLateDuration: number;
       earlyLeaveCount: number;
       totalEarlyLeaveDuration: number;
-      absentCount: number;
+      didNotActivateSupervisionCount: number;
+      waitingDone: number;
+      waitingPaidDone: number;
       didNotSendWeeklyPlanCount: number;
       missedLessonCount: number;
       missedStandbyCount: number;
       enteredStandbyCount: number;
       lateForWorkCount: number;
       totalLateForWorkDuration: number;
-      didNotActivateSupervisionCount: number;
       leftSchoolCount: number;
+      TeacherWaitDone: string[];
+      TeacherWaitPaidDone: string[];
     };
   },
-  teacherName: string,
   startDate: string,
   endDate: string
 ) => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("تقرير");
 
-  // إعداد عنوان التقرير مع استخدام نمط تعبئة "pattern"
+  // إعداد عنوان التقرير
   worksheet.mergeCells("A1:C1");
   const titleCell = worksheet.getCell("A1");
-  titleCell.value = `تقرير أداء المعلم`;
+  titleCell.value = `تقرير أداء المعلمين`;
   titleCell.font = { size: 20, bold: true, color: { argb: "FFFFFFFF" } };
-
   titleCell.alignment = { horizontal: "center", vertical: "middle" };
   titleCell.fill = {
     type: "pattern",
     pattern: "solid",
-    fgColor: { argb: "4CAF50" }, // اللون الأخضر
+    fgColor: { argb: "4CAF50" },
   };
 
   worksheet.getCell("B22").value = "تاريخ البداية";
   worksheet.getCell("B23").value = startDate;
   worksheet.getCell("C22").value = "تاريخ النهاية";
   worksheet.getCell("C23").value = endDate;
-  worksheet.getCell("B22").font = { bold: true, color: { argb: "FFFFFFFF" } };
-  worksheet.getCell("B22").alignment = { horizontal: "center" };
-  worksheet.getCell("B22").fill = {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: "007BFF" }, // اللون الأزرق
-  };
-  worksheet.getCell("C22").font = { bold: true, color: { argb: "FFFFFFFF" } };
-  worksheet.getCell("C22").alignment = { horizontal: "center" };
-  worksheet.getCell("C22").fill = {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: "007BFF" }, // اللون الأزرق
-  };
-  // إضافة معلومات المعلم
-  const teacherNames = splitNames(teacherName); // فصل الأسماء إذا كانت هناك أكثر من اسم
-  if (teacherNames.length === 1) {
-    worksheet.getCell("A3").value = "اسم المعلم";
-    worksheet.getCell("A4").value = teacherNames[0];
-  } else {
-    worksheet.getCell("A3").value = "أسماء المعلمين";
-    teacherNames.forEach((name, index) => {
-      worksheet.getCell(`A${4 + index}`).value = name;
-    });
-  }
-  worksheet.getCell("A3").font = { bold: true, color: { argb: "FFFFFFFF" } };
-  worksheet.getCell("A3").alignment = { horizontal: "center" };
-  worksheet.getCell("A3").fill = {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: "4CAF50" }, // اللون الأزرق
-  };
-  // إضافة رؤوس الجدول
-  worksheet.getCell("B3").value = "البيان";
-  worksheet.getCell("C3").value = "القيمة";
-  worksheet.getCell("C3").font = { bold: true, color: { argb: "FFFFFFFF" } };
-  worksheet.getCell("B3").font = { bold: true, color: { argb: "FFFFFFFF" } };
-  worksheet.getCell("B3").alignment = { horizontal: "center" };
-  worksheet.getCell("C3").alignment = { horizontal: "center" };
-  worksheet.getCell("B3").fill = {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: "007BFF" }, // اللون الأزرق
-  };
-  worksheet.getCell("C3").fill = {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: "007BFF" }, // اللون الأزرق
-  };
 
-  // إضافة بيانات الملاحظات
-  let rowIndex = 5;
-  Object.entries(notes).forEach(([key, value]) => {
-    worksheet.getCell(`B${rowIndex}`).value = getLabel(key as notesTypy);
-    worksheet.getCell(`C${rowIndex}`).value = `${value}`;
+  let rowIndex = 3;
+
+  // إضافة بيانات لكل معلم
+  Object.entries(notes).forEach(([teacherId, data]) => {
+    // عنوان للمعلم
+    worksheet.mergeCells(`A${rowIndex}:C${rowIndex}`);
+    const teacherTitleCell = worksheet.getCell(`A${rowIndex}`);
+    teacherTitleCell.value = `اسم المعلم: ${data.name}`;
+    teacherTitleCell.font = {
+      bold: true,
+      size: 14,
+      color: { argb: "FFFFFFFF" },
+    };
+    teacherTitleCell.alignment = { horizontal: "center" };
+    teacherTitleCell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "007BFF" },
+    };
+    rowIndex++;
+
+    // رؤوس الجدول
+    worksheet.getCell(`B${rowIndex}`).value = "البيان";
+    worksheet.getCell(`C${rowIndex}`).value = "القيمة";
+    worksheet.getCell(`B${rowIndex}`).font = { bold: true };
+    worksheet.getCell(`C${rowIndex}`).font = { bold: true };
     worksheet.getCell(`B${rowIndex}`).alignment = { horizontal: "center" };
     worksheet.getCell(`C${rowIndex}`).alignment = { horizontal: "center" };
+    rowIndex++;
 
-    // إضافة حدود للخلايا
-    worksheet.getCell(`B${rowIndex}`).border = {
-      top: { style: "thin", color: { argb: "CCCCCC" } },
-      left: { style: "thin", color: { argb: "CCCCCC" } },
-      bottom: { style: "thin", color: { argb: "CCCCCC" } },
-      right: { style: "thin", color: { argb: "CCCCCC" } },
-    };
-    worksheet.getCell(`C${rowIndex}`).border = {
-      top: { style: "thin", color: { argb: "CCCCCC" } },
-      left: { style: "thin", color: { argb: "CCCCCC" } },
-      bottom: { style: "thin", color: { argb: "CCCCCC" } },
-      right: { style: "thin", color: { argb: "CCCCCC" } },
-    };
+    // البيانات الخاصة بالمعلم
+    const teacherData = [
+      { label: "عدد الدروس", value: data.lessonCount },
+      { label: "عدد الإنجازات", value: data.DoneCount },
+      { label: "عدد الغياب", value: data.absentCount },
+      { label: "عدد التأخيرات", value: data.lateCount },
+      { label: "إجمالي مدة التأخير", value: data.totalLateDuration },
+      { label: "عدد المغادرات المبكرة", value: data.earlyLeaveCount },
+      {
+        label: "إجمالي مدة المغادرة المبكرة",
+        value: data.totalEarlyLeaveDuration,
+      },
+      {
+        label: "عدد مرات عدم تفعيل الإشراف",
+        value: data.didNotActivateSupervisionCount,
+      },
+      { label: "عدد الإنجازات المنتظرة", value: data.waitingDone },
+      { label: "عدد الإنجازات المدفوعة المنتظرة", value: data.waitingPaidDone },
+      {
+        label: "عدد مرات عدم إرسال الخطة الأسبوعية",
+        value: data.didNotSendWeeklyPlanCount,
+      },
+      { label: "عدد الدروس الفائتة", value: data.missedLessonCount },
+      {
+        label: "عدد الفصول الاحتياطية الفائتة",
+        value: data.missedStandbyCount,
+      },
+      {
+        label: "عدد الفصول الاحتياطية التي دخلها",
+        value: data.enteredStandbyCount,
+      },
+      { label: "عدد مرات التأخير عن العمل", value: data.lateForWorkCount },
+      {
+        label: "إجمالي مدة التأخير عن العمل",
+        value: data.totalLateForWorkDuration,
+      },
+      { label: "عدد مرات ترك المدرسة", value: data.leftSchoolCount },
+    ];
 
-    // تغيير اللون الخلفي لكل سطر
-    if (rowIndex % 2 === 0) {
-      worksheet.getCell(`B${rowIndex}`).fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "F2F2F2" }, // خلفية رمادي فاتح للصفوف الزوجية
-      };
-      worksheet.getCell(`C${rowIndex}`).fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "F2F2F2" }, // خلفية رمادي فاتح للصفوف الزوجية
-      };
-    }
+    teacherData.forEach((item) => {
+      worksheet.getCell(`B${rowIndex}`).value = item.label;
+      worksheet.getCell(`C${rowIndex}`).value = item.value;
+      worksheet.getCell(`B${rowIndex}`).alignment = { horizontal: "center" };
+      worksheet.getCell(`C${rowIndex}`).alignment = { horizontal: "center" };
+      rowIndex++;
+    });
 
+    // ترك سطر فارغ بين المعلمين
     rowIndex++;
   });
-
-  // تعديل عرض الأعمدة
-  worksheet.getColumn(1).width = 30;
-  worksheet.getColumn(2).width = 30; // توسيع عمود البيانات
-  worksheet.getColumn(3).width = 15; // توسيع عمود القيم
 
   // حفظ الملف
   const buffer = await workbook.xlsx.writeBuffer();
@@ -171,7 +164,7 @@ export const exportToExcel = async (
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${teacherNames[0].slice(0, 50)}_تقرير_الأسبوع.xlsx`;
+  a.download = `تقرير_المعلمين.xlsx`;
   a.click();
   window.URL.revokeObjectURL(url);
 };
@@ -575,7 +568,7 @@ export const downloadTeachersExcel = async (
 
   // إعداد الأنماط
   const headerStyle = {
-    font: { bold: true, color: { argb: "FFFFFF" }, size: 14 },
+    font: { bold: true, color: { argb: "000000" }, size: 14 },
     alignment: {
       vertical: "middle" as "middle",
       horizontal: "center" as "center",
@@ -622,10 +615,16 @@ export const downloadTeachersExcel = async (
     header,
     key: `col${index}`,
     width: 20,
+    style: headerStyle,
+    fill: {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "1e7569" },
+    },
   }));
 
   // تعيين أنماط للرؤوس
-  worksheet.getRow(2).eachCell((cell) => {
+  worksheet.getRow(0).eachCell((cell) => {
     cell.style = headerStyle;
     cell.fill = {
       type: "pattern",
@@ -727,6 +726,122 @@ export const downloadTeachersExcel = async (
   const a = document.createElement("a");
   a.href = url;
   a.download = `${schoolData.schoolName}_بيانات_المعلمين.xlsx`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+};
+
+interface ITeacher2 {
+  name: string;
+  WeeklySchedule: { lessons: Lesson[] }[];
+}
+
+export const generateExcel = async (teachers: ITeacher2[]) => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("الجدول العام");
+
+  // الأيام وعدد الحصص
+  const days = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس"];
+  const periods = [1, 2, 3, 4, 5, 6, 7, 8];
+
+  // إعداد رأس الجدول
+  worksheet.mergeCells("A1:A2");
+  worksheet.getCell("A1").value = "المعلم";
+  worksheet.getCell("A1").fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FFFF00" }, // اللون الأصفر
+  };
+  worksheet.getCell("A1").alignment = {
+    vertical: "middle",
+    horizontal: "center",
+  };
+
+  let colIndex = 2;
+  days.forEach((day) => {
+    worksheet.mergeCells(1, colIndex, 1, colIndex + 7);
+    const dayCell = worksheet.getCell(1, colIndex);
+    dayCell.value = day;
+    dayCell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFFF00" }, // اللون الأصفر
+    };
+    dayCell.alignment = { vertical: "middle", horizontal: "center" };
+
+    periods.forEach((period, index) => {
+      const periodCell = worksheet.getCell(2, colIndex + index);
+      periodCell.value = `${period}`;
+      periodCell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFFF00" }, // اللون الأصفر
+      };
+      periodCell.alignment = { vertical: "middle", horizontal: "center" };
+    });
+
+    colIndex += 8; // الانتقال للأيام التالية
+  });
+
+  // إدخال بيانات المعلمين والجداول
+  let rowIndex = 3; // بدء الصفوف من بعد العناوين
+  teachers.forEach((teacher, teacherIndex) => {
+    const teacherRow = worksheet.getRow(rowIndex);
+    worksheet.getCell(rowIndex, 1).value = teacher.name;
+
+    // تطبيق الألوان بالتناوب لصفوف المدرسين
+    const rowColor =
+      teacherIndex % 3 === 0
+        ? "e5fbe9"
+        : teacherIndex % 3 === 1
+        ? "fffce9"
+        : "ecf8fd"; // أخضر فاتح، لبني، أصفر باهت
+    teacherRow.eachCell((cell) => {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: rowColor },
+      };
+    });
+
+    days.forEach((day, dayIndex) => {
+      periods.forEach((period, periodIndex) => {
+        const lesson = teacher.WeeklySchedule[0].lessons.find(
+          (l) => getArabicDay(l.day) === day && l.period === period
+        );
+        worksheet.getCell(rowIndex, 2 + dayIndex * 8 + periodIndex).value =
+          lesson ? lesson.title : "";
+        worksheet.getCell(rowIndex, 2 + dayIndex * 8 + periodIndex).fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: rowColor },
+        };
+      });
+    });
+
+    rowIndex++;
+  });
+
+  // تنسيق الجدول
+  worksheet.eachRow((row) => {
+    row.eachCell((cell) => {
+      cell.alignment = { vertical: "middle", horizontal: "center" };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+    });
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `الجدول العام.xlsx`;
   a.click();
   window.URL.revokeObjectURL(url);
 };

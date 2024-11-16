@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import WeeklySchedule, { Lesson } from "@/lib/models/WeeklySchedule"; // Adjust this path as needed
 import { connectDB } from "@/mongoose";
+import Teacher from "@/lib/models/Teacher";
 
 export async function POST(req: Request) {
   try {
@@ -24,6 +25,9 @@ export async function POST(req: Request) {
         weekStartDate: new Date(weekStartDate),
         lessons: [lesson],
       });
+      let t = await Teacher.findById(teacherId);
+      t.WeeklySchedule.push(weeklySchedule._id);
+      await t.save();
       if ((lesson as Lesson).notes.enteredStandby) {
         let weeklySchedule2 = await WeeklySchedule.findOne({
           teacher: (lesson as Lesson).notes.enteredStandby,
@@ -46,6 +50,11 @@ export async function POST(req: Request) {
             weekStartDate: new Date(weekStartDate),
             lessons: [Les],
           });
+          let t = await Teacher.findById(
+            (lesson as Lesson).notes.enteredStandby
+          );
+          t.WeeklySchedule.push(weeklySchedule2._id);
+          await t.save();
         } else {
           let isLessonFind = weeklySchedule.lessons.some(
             (e) => e.day === Les.day && e.period === Les.period

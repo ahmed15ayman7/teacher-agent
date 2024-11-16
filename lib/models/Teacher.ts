@@ -1,11 +1,11 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 export interface ITeacher {
   name: string;
   specialization?: string;
   civilRecord?: string;
   sessionCount?: number;
   phoneNumber?: string;
-  teachingStage: 'Primary' | 'Intermediate' | 'Secondary';
+  teachingStage: "Primary" | "Intermediate" | "Secondary";
   birthDate?: Date;
   supervisionDay?: string;
   qualification?: string;
@@ -14,8 +14,8 @@ export interface ITeacher {
   OtherTasksAssigned?: string;
   SupervisionPlace?: string;
   ClassesTaught?: string;
-  WeeklySchedule?: string;
-  schoolId:string;
+  WeeklySchedule?: string[];
+  schoolId: string;
 }
 const TeacherSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -24,7 +24,11 @@ const TeacherSchema = new mongoose.Schema({
   civilRecord: { type: String, required: false },
   sessionCount: { type: Number, required: false },
   phoneNumber: { type: String, required: false },
-  teachingStage: { type: String, enum: ['Primary', 'Intermediate', 'Secondary'], required: true },
+  teachingStage: {
+    type: String,
+    enum: ["Primary", "Intermediate", "Secondary"],
+    required: true,
+  },
   birthDate: { type: Date, required: false },
   supervisionDay: { type: String, required: false },
   qualification: { type: String, required: false },
@@ -33,7 +37,10 @@ const TeacherSchema = new mongoose.Schema({
   OtherTasksAssigned: { type: String, required: false },
   SupervisionPlace: { type: String, required: false },
   ClassesTaught: { type: String, required: false },
-  WeeklySchedule: { type: mongoose.Schema.Types.ObjectId, ref: 'WeeklySchedule' }
+  WeeklySchedule: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "WeeklySchedule" },
+  ],
 });
 
-export default mongoose.models.Teacher || mongoose.model('Teacher', TeacherSchema);
+export default mongoose.models.Teacher ||
+  mongoose.model("Teacher", TeacherSchema);

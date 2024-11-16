@@ -79,14 +79,14 @@ function ReportPage() {
         START_END_WEEK.end
           ? exportToExcel(
               notes,
-              checked
-                ? teachers.map((e: { name: string }) => e.name).join(" , ")
-                : (
-                    teachers.filter(
-                      (e: { name: string; _id: string }) =>
-                        e._id === selectedTeacher
-                    )[0] as { name: string }
-                  ).name,
+              // checked
+              //   ? teachers.map((e: { name: string }) => e.name).join(" , ")
+              //   : (
+              //       teachers.filter(
+              //         (e: { name: string; _id: string }) =>
+              //           e._id === selectedTeacher
+              //       )[0] as { name: string }
+              //     ).name,
               START_END_WEEK?.start.toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "numeric",

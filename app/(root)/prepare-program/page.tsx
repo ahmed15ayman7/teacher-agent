@@ -21,6 +21,7 @@ import axios from "axios";
 import {
   buttonStyles,
   downloadTeachersExcel,
+  generateExcel,
   getDate,
   getHijriDate,
   getTime,
@@ -111,6 +112,11 @@ const FormComponent: React.FC = () => {
       principalName: SchoolData.principal,
       educationalSupervisor: SchoolData.deputy,
     });
+  }
+  
+ async function dwonloadGenralSchedul() {
+    let response = await axios.get(`/api/teachers?schoolId=${SchoolData._id}&&i=1`);
+    generateExcel(response.data);
   }
 
   return (
@@ -437,7 +443,14 @@ const FormComponent: React.FC = () => {
         </Grid>
 
         <Grid size={{ md: 4, sm: 12, xs: 12 }}>
-          <Button className={buttonStyles2} fullWidth>
+          <Button
+            className={buttonStyles2}
+            fullWidth
+            onClick={(e) => {
+              e.preventDefault();
+              dwonloadGenralSchedul();
+            }}
+          >
             اضغط هنا لتحميل الجدول العام إكسل
           </Button>
         </Grid>
@@ -446,7 +459,10 @@ const FormComponent: React.FC = () => {
           <Button
             className={buttonStyles2}
             fullWidth
-            onClick={() => downloadTeachers()}
+            onClick={(e) => {
+              e.preventDefault();
+              downloadTeachers();
+            }}
           >
             اضغط هنا لتحميل بيانات المعلمين إكسل
           </Button>
