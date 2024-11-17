@@ -18,7 +18,8 @@ import { Lesson } from "@/lib/models/WeeklySchedule";
 import { buttonStyles, exportToExcel, getLabel, notesTypy } from "@/constants";
 import Grid2 from "@mui/material/Grid2";
 import TeacherReportTable from "@/components/shared/TeacherReportTable";
-
+import { getSchoolData } from "@/lib/actions/user.action";
+import { useQuery } from "@tanstack/react-query";
 function ReportPage() {
   const [teachers, setTeachers] = useState([]);
   const [selectedTeacher, setSelectedTeacher] = useState("");
@@ -59,11 +60,15 @@ function ReportPage() {
     weekStartDate: Date;
     lessons: Lesson[];
   } | null>(null);
+  let { data: SchoolData, isLoading } = useQuery({
+    queryKey: ["SchoolData"],
+    queryFn: () => getSchoolData(),
+  });
   useEffect(() => {
-    axios.get("/api/teachers").then((response) => {
+    !isLoading && axios.get(`/api/teachers?schoolId=${SchoolData._id}`).then((response) => {
       setTeachers(response.data);
     });
-  }, []);
+  }, [SchoolData]);
   const handleButtonClick = (action: string) => {
     switch (action) {
       case "طباعة التقرير":
@@ -153,7 +158,7 @@ function ReportPage() {
         teachers.map((e: { _id: string }) => e._id).join(",")
       );
   }, [checked, START_END_WEEK]);
-  console.log(notes);
+  console.log(teachers);
 
   return (
     <div className="">

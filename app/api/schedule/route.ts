@@ -1,3 +1,4 @@
+import Teacher from "@/lib/models/Teacher";
 import WeeklySchedule from "@/lib/models/WeeklySchedule";
 import { connectDB } from "@/mongoose";
 import { NextRequest, NextResponse } from "next/server";
@@ -29,7 +30,10 @@ export async function GET(request: NextRequest) {
       filters.$or = teacherIds.map((id) => ({ teacher: id }));
     }
 
-    const schedules = await WeeklySchedule.find(filters).populate("teacher");
+    const schedules = await WeeklySchedule.find(filters).populate({
+      path: "teacher",
+      model: Teacher,
+    });
     return NextResponse.json(schedules, { status: 200 });
   } catch (error) {
     return NextResponse.json(

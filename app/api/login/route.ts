@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 
 import { connectDB } from "@/mongoose";
 import School from "@/lib/models/school";
+import Teacher from "@/lib/models/Teacher";
 
 // استخدام متغير بيئي للـ JWT_SECRET مع تعيين قيمة افتراضية للأمان
 const secret =
@@ -20,7 +21,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "كلمة السر خاطئة" }, { status: 400 });
     }
 
-    const SchoolData = await School.findOne({ password }).populate("teachers");
+    const SchoolData = await School.findOne({ password }).populate({
+      path: "teachers",
+      model: Teacher,
+    });
 
     if (!SchoolData) {
       return NextResponse.json({ message: "كلمة السر خاطئة" }, { status: 401 });

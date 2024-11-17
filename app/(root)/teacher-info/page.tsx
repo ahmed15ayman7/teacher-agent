@@ -117,7 +117,7 @@ const TeacherForm = () => {
         console.warn("Unknown action:", action);
     }
   };
-
+  console.log(teachers);
   return (
     <Box
       component="form"
@@ -144,7 +144,7 @@ const TeacherForm = () => {
             >
               <Typography
                 variant="body1"
-                className="flex-grow font-bold text-center"
+                className="flex-grow font-bold text-center leftBs"
                 style={{ color: "#006d4e" }}
               >
                 اختر المعلم
@@ -274,17 +274,17 @@ const TeacherForm = () => {
                 render={({ field }) => (
                   <RadioGroup row {...field}>
                     <FormControlLabel
-                      value="primary"
+                      value="Primary"
                       control={<Radio />}
                       label="ابتدائي"
                     />
                     <FormControlLabel
-                      value="intermediate"
+                      value="Intermediate"
                       control={<Radio />}
                       label="متوسط"
                     />
                     <FormControlLabel
-                      value="secondary"
+                      value="Secondary"
                       control={<Radio />}
                       label="ثانوي"
                     />
@@ -299,6 +299,11 @@ const TeacherForm = () => {
                 render={({ field }) => (
                   <TextField
                     {...field}
+                    defaultValue={
+                      field.value ?
+                      new Date(field.value).toLocaleDateString("en-US")
+                      :undefined
+                    }
                     label="تاريخ الميلاد"
                     type="date"
                     sx={{
@@ -449,7 +454,7 @@ const TeacherForm = () => {
             {selectedTeacher && (
               <Grid xs={12} md={6}>
                 <Link href={`/add-notes?id=${selectedTeacher}`}>
-                  <Button className={buttonStyles2} fullWidth>
+                  <Button className={`${buttonStyles2} leftBs`} fullWidth>
                     اضغط هنا لاستعراض جدوله الدراسي
                   </Button>
                 </Link>

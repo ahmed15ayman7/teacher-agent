@@ -22,7 +22,7 @@ const LoginPage = () => {
   });
   let router = useRouter();
   const onSubmit = async (data: LoginSchema) => {
-    const toastId = toast.loading("جاري حفظ الملاحظات");
+    const toastId = toast.loading("جاري تسجيل الدخول");
     try {
       let response = await axios.post("/api/login", {
         ...data,

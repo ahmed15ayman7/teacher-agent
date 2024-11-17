@@ -2,6 +2,7 @@ import { connectDB } from "@/mongoose";
 import Teacher from "@/lib/models/Teacher";
 import { NextResponse } from "next/server";
 import School from "@/lib/models/school";
+import WeeklySchedule from "@/lib/models/WeeklySchedule";
 
 // استرجاع جميع المعلمين
 export async function GET(req: Request) {
@@ -12,7 +13,11 @@ export async function GET(req: Request) {
     const i = searchParams.get("i");
     const teachers =
       i === "1"
-        ? await Teacher.find({ schoolId }).populate("WeeklySchedule")
+        ? await Teacher.find({ schoolId }).populate({
+            path: "WeeklySchedule",
+            model: WeeklySchedule,
+            select: "lessons",
+          })
         : await Teacher.find({ schoolId });
     return NextResponse.json(teachers);
   } catch (error: any) {

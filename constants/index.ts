@@ -742,7 +742,7 @@ export const generateExcel = async (teachers: ITeacher2[]) => {
   // الأيام وعدد الحصص
   const days = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس"];
   const periods = [1, 2, 3, 4, 5, 6, 7, 8];
-
+  console.log(teachers);
   // إعداد رأس الجدول
   worksheet.mergeCells("A1:A2");
   worksheet.getCell("A1").value = "المعلم";
