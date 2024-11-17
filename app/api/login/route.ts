@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     // إنشاء استجابة تسجيل دخول ناجحة
     const response = NextResponse.json(
-      { message: "Login successful.", data: SchoolData },
+      { message: "Login successful.", data: SchoolData, token },
       { status: 200 }
     );
     response.cookies.set("authTokenSchool", token, {
