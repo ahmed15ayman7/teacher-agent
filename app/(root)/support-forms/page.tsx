@@ -11,6 +11,7 @@ import {
   InputLabel,
   FormControl,
   IconButton,
+  Grid2,
 } from "@mui/material";
 import { buttonStyles } from "@/constants";
 import { toast } from "react-toastify";
@@ -44,6 +45,11 @@ const MyDesign = () => {
   return (
     <Box p={2}>
       <Grid container spacing={2}>
+        <Grid container className={` -translate-y-20 p-0 leftBs`}>
+          <Grid2 size={{ md: 2, sm: 4, xs: 4 }}>
+            <p className={`${buttonStyles} text-center  px-5 `}> نماذج</p>
+          </Grid2>
+        </Grid>
         <Grid item xs={12} sm={10}>
           <Grid container spacing={2}>
             {/* اختيار المعلم والأسبوع */}
