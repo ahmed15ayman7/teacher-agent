@@ -40,6 +40,9 @@ export const uploadGenralSc = async (teachersData: any[]) => {
     for (const schedule of teachersData) {
       let s = await WeeklySchedule.create(schedule);
       await s.save();
+      let t = await Teacher.findById(schedule.teacher);
+      t.WeeklySchedule.push(s._id);
+      await t.save();
     }
   } catch (e: any) {
     console.error(e);

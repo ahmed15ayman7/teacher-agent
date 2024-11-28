@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
     const filters: {
       // weekStartDate?: { $gte?: Date; $lte?: Date };
       $or?: (
-        | { teacher: string }
         | { isTemplate: boolean }
+        | { teacher: string }
         | { weekStartDate: any }
       )[];
     } = {};

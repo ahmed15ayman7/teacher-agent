@@ -11,9 +11,17 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const schoolId = searchParams.get("schoolId");
     const i = searchParams.get("i");
+    const filters: {
+      schoolId?: string;
+      $or?: { isTemplate: boolean }[];
+    } = {};
+    if (schoolId) {
+      filters.schoolId = schoolId;
+      filters.$or = [{ isTemplate: true }];
+    }
     const teachers =
       i === "1"
-        ? await Teacher.find({ schoolId }).populate({
+        ? await Teacher.find(filters).populate({
             path: "WeeklySchedule",
             model: WeeklySchedule,
             select: "lessons",
