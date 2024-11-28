@@ -196,7 +196,43 @@ export const exportToExcel = async (
   a.click();
   window.URL.revokeObjectURL(url);
 };
+export const generatePDF = async (
+  tableRef: React.RefObject<HTMLDivElement>
+) => {
+  if (tableRef.current) {
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
 
+    const canvas = await html2canvas(tableRef.current, {
+      scale: 2, // تحسين جودة الصورة
+    });
+    const imgData = canvas.toDataURL("image/png");
+    const imgWidth = pdfWidth; // عرض الصورة بالكامل على عرض الصفحة
+    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    let yPosition = 0; // بداية الصفحة في ملف PDF
+
+    while (yPosition < imgHeight) {
+      pdf.addImage(
+        imgData,
+        "PNG",
+        0,
+        -yPosition, // إزاحة الجزء المراد رسمه
+        imgWidth,
+        imgHeight
+      );
+
+      yPosition += pdfHeight; // الانتقال إلى الصفحة التالية
+
+      if (yPosition < imgHeight) {
+        pdf.addPage(); // إضافة صفحة جديدة إذا كان هناك المزيد من المحتوى
+      }
+    }
+
+    pdf.save("تقرير_المعلمين.pdf");
+  }
+};
 export const buttonStyles =
   "w-full py-2 my-2 text-white font-bold rounded-lg bg-gradient-to-r from-green-700 to-blue-900 hover:from-green-800 hover:to-blue-800 shadow-md shadow-blue-500/50";
 
@@ -582,6 +618,8 @@ export function getHijriDate(): string {
 }
 
 import { ITeacher } from "@/lib/models/Teacher";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 export const downloadTeachersExcel = async (
   teachers: ITeacher[],

@@ -1,9 +1,9 @@
 "use client";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Tooltip, Button, Box, Typography } from "@mui/material";
-import { buttonStyles } from "@/constants";
+import { buttonStyles, generatePDF } from "@/constants";
 import Grid from "@mui/material/Grid2";
 import { useRouter } from "next/navigation";
 import TeacherScheduleTable from "@/components/shared/TeacherScheduleTable";
@@ -35,6 +35,7 @@ const ExcelViewer = () => {
       return response.data;
     },
   });
+  const tableRef = useRef<HTMLDivElement>(null);
   const handleDownload = () => {
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
@@ -49,7 +50,6 @@ const ExcelViewer = () => {
   const handleReset = () => {
     router.back();
   };
-
   return (
     <Box sx={{ p: "0px 3px 3px 3px" }}>
       <Grid container spacing={2}>
@@ -69,6 +69,7 @@ const ExcelViewer = () => {
             <div style={{ width: "100%" }}>
               <TeacherScheduleTable
                 teachers={teachers}
+                tableRef={tableRef}
                 schoolName={SchoolData.schoolName}
               />
             </div>
@@ -88,12 +89,12 @@ const ExcelViewer = () => {
               <Button
                 variant="contained"
                 className={buttonStyles}
-                onClick={handleDownload}
+                onClick={async () => await generatePDF(tableRef)}
               >
                 طباعة
               </Button>
             </Tooltip>
-            <Tooltip title="مشاركة">
+            {/* <Tooltip title="مشاركة">
               <Button
                 variant="contained"
                 className={buttonStyles}
@@ -101,7 +102,7 @@ const ExcelViewer = () => {
               >
                 مشاركة
               </Button>
-            </Tooltip>
+            </Tooltip> */}
             <Tooltip title="تنزيل">
               <Button
                 variant="contained"
@@ -111,7 +112,7 @@ const ExcelViewer = () => {
                 تنزيل
               </Button>
             </Tooltip>
-            <Tooltip title="تكبير">
+            {/* <Tooltip title="تكبير">
               <Button
                 variant="contained"
                 className={buttonStyles}
@@ -119,7 +120,7 @@ const ExcelViewer = () => {
               >
                 {isZoomed ? "تصغير" : "تكبير"}
               </Button>
-            </Tooltip>
+            </Tooltip> */}
             <Tooltip title="عودة">
               <Button
                 variant="contained"

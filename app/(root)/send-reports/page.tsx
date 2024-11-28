@@ -17,7 +17,13 @@ import axios from "axios";
 import { handleSelectTeacherHandlerReport } from "@/hook/teacherFunctionsReport";
 import { ITeacher } from "@/lib/models/Teacher";
 import { Lesson } from "@/lib/models/WeeklySchedule";
-import { buttonStyles, exportToExcel, getLabel, notesTypy } from "@/constants";
+import {
+  buttonStyles,
+  exportToExcel,
+  generatePDF,
+  getLabel,
+  notesTypy,
+} from "@/constants";
 import Grid2 from "@mui/material/Grid2";
 import TeacherReportTable from "@/components/shared/TeacherReportTable";
 import { getSchoolData } from "@/lib/actions/user.action";
@@ -79,46 +85,11 @@ function ReportPage() {
   }, [SchoolData]);
   const tableRef = useRef<HTMLDivElement>(null);
 
-  const generatePDF = async () => {
-    if (tableRef.current) {
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      const canvas = await html2canvas(tableRef.current, {
-        scale: 2, // تحسين جودة الصورة
-      });
-      const imgData = canvas.toDataURL("image/png");
-      const imgWidth = pdfWidth; // عرض الصورة بالكامل على عرض الصفحة
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      let yPosition = 0; // بداية الصفحة في ملف PDF
-
-      while (yPosition < imgHeight) {
-        pdf.addImage(
-          imgData,
-          "PNG",
-          0,
-          -yPosition, // إزاحة الجزء المراد رسمه
-          imgWidth,
-          imgHeight
-        );
-
-        yPosition += pdfHeight; // الانتقال إلى الصفحة التالية
-
-        if (yPosition < imgHeight) {
-          pdf.addPage(); // إضافة صفحة جديدة إذا كان هناك المزيد من المحتوى
-        }
-      }
-
-      pdf.save("تقرير_المعلمين.pdf");
-    }
-  };
   const handleButtonClick = async (action: string) => {
     switch (action) {
       case "طباعة التقرير":
         isPrint ? setIsPrintGr(12) : setIsPrintGr(10);
-        isPrint && (await generatePDF());
+        isPrint && (await generatePDF(tableRef));
         setIsPrint((e) => !e);
         break;
       case "تنزيل التقرير":

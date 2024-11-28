@@ -19,12 +19,16 @@ interface ITeacher2 {
 const TeacherScheduleTable: React.FC<{
   teachers: ITeacher2[];
   schoolName: string;
-}> = ({ teachers, schoolName }) => {
+  tableRef: React.RefObject<HTMLDivElement>;
+}> = ({ teachers, schoolName, tableRef }) => {
   const days = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس"];
   const periods = [1, 2, 3, 4, 5, 6, 7];
 
   return (
-    <div style={{ overflowX: "auto", maxHeight: "500px", overflowY: "auto" }}>
+    <div
+      ref={tableRef}
+      style={{ overflowX: "auto", maxHeight: "500px", overflowY: "auto" }}
+    >
       <Table style={{ minWidth: 1000 }} className="w-full">
         <TableHead>
           {/* الصف الخاص باسم المدرسة */}
