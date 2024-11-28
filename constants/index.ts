@@ -58,8 +58,20 @@ export const exportToExcel = async (
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("تقرير");
 
+  // إعداد عرض الأعمدة وارتفاع الصفوف
+  worksheet.columns = Array.from(
+    { length: Object.keys(notes).length * 3 },
+    () => ({
+      width: 25, // عرض العمود
+    })
+  );
+
+  worksheet.eachRow((row, rowNumber) => {
+    row.height = 30; // ارتفاع الصف
+  });
+
   // إعداد عنوان التقرير
-  worksheet.mergeCells("A1:C1");
+  worksheet.mergeCells("A1:D1");
   const titleCell = worksheet.getCell("A1");
   titleCell.value = `تقرير أداء المعلمين`;
   titleCell.font = { size: 20, bold: true, color: { argb: "FFFFFFFF" } };
@@ -70,18 +82,19 @@ export const exportToExcel = async (
     fgColor: { argb: "4CAF50" },
   };
 
-  worksheet.getCell("B22").value = "تاريخ البداية";
-  worksheet.getCell("B23").value = startDate;
-  worksheet.getCell("C22").value = "تاريخ النهاية";
-  worksheet.getCell("C23").value = endDate;
+  // تاريخ البداية والنهاية
+  worksheet.getCell("A2").value = "تاريخ البداية";
+  worksheet.getCell("B2").value = startDate;
+  worksheet.getCell("D2").value = "تاريخ النهاية";
+  worksheet.getCell("E2").value = endDate;
 
-  let rowIndex = 3;
+  // إعداد الأعمدة
+  let columnIndex = 1;
 
-  // إضافة بيانات لكل معلم
-  Object.entries(notes).forEach(([teacherId, data]) => {
-    // عنوان للمعلم
-    worksheet.mergeCells(`A${rowIndex}:C${rowIndex}`);
-    const teacherTitleCell = worksheet.getCell(`A${rowIndex}`);
+  Object.entries(notes).forEach(([teacherId, data], index) => {
+    // إضافة اسم المعلم
+    worksheet.mergeCells(3, columnIndex, 3, columnIndex + 1);
+    const teacherTitleCell = worksheet.getCell(3, columnIndex);
     teacherTitleCell.value = `اسم المعلم: ${data.name}`;
     teacherTitleCell.font = {
       bold: true,
@@ -94,16 +107,14 @@ export const exportToExcel = async (
       pattern: "solid",
       fgColor: { argb: "007BFF" },
     };
-    rowIndex++;
 
     // رؤوس الجدول
-    worksheet.getCell(`B${rowIndex}`).value = "البيان";
-    worksheet.getCell(`C${rowIndex}`).value = "القيمة";
-    worksheet.getCell(`B${rowIndex}`).font = { bold: true };
-    worksheet.getCell(`C${rowIndex}`).font = { bold: true };
-    worksheet.getCell(`B${rowIndex}`).alignment = { horizontal: "center" };
-    worksheet.getCell(`C${rowIndex}`).alignment = { horizontal: "center" };
-    rowIndex++;
+    worksheet.getCell(4, columnIndex).value = "البيان";
+    worksheet.getCell(4, columnIndex + 1).value = "القيمة";
+    worksheet.getCell(4, columnIndex).font = { bold: true };
+    worksheet.getCell(4, columnIndex + 1).font = { bold: true };
+    worksheet.getCell(4, columnIndex).alignment = { horizontal: "center" };
+    worksheet.getCell(4, columnIndex + 1).alignment = { horizontal: "center" };
 
     // البيانات الخاصة بالمعلم
     const teacherData = [
@@ -144,16 +155,33 @@ export const exportToExcel = async (
       { label: "عدد مرات ترك المدرسة", value: data.leftSchoolCount },
     ];
 
-    teacherData.forEach((item) => {
-      worksheet.getCell(`B${rowIndex}`).value = item.label;
-      worksheet.getCell(`C${rowIndex}`).value = item.value;
-      worksheet.getCell(`B${rowIndex}`).alignment = { horizontal: "center" };
-      worksheet.getCell(`C${rowIndex}`).alignment = { horizontal: "center" };
-      rowIndex++;
+    teacherData.forEach((item, dataIndex) => {
+      worksheet.getCell(5 + dataIndex, columnIndex).value = item.label;
+      worksheet.getCell(5 + dataIndex, columnIndex + 1).value = item.value;
+      worksheet.getCell(5 + dataIndex, columnIndex).alignment = {
+        horizontal: "center",
+      };
+      worksheet.getCell(5 + dataIndex, columnIndex + 1).alignment = {
+        horizontal: "center",
+      };
     });
 
-    // ترك سطر فارغ بين المعلمين
-    rowIndex++;
+    // إضافة عمود فاصل بعد كل معلم (عدا الأخير)
+    if (index < Object.entries(notes).length - 1) {
+      worksheet.getColumn(columnIndex + 2).width = 1; // عرض صغير للعمود الفاصل
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber >= 4) {
+          // البدء من الصف الثالث
+          const cell = row.getCell(columnIndex + 2);
+          cell.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "4CAF50" }, // اللون الأخضر
+          };
+        }
+      });
+    }
+    columnIndex += 3;
   });
 
   // حفظ الملف

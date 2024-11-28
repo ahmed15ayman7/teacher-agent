@@ -1,5 +1,8 @@
 "use server";
 import { cookies } from "next/headers";
+import WeeklySchedule from "../models/WeeklySchedule";
+import { connectDB } from "@/mongoose";
+import Teacher from "../models/Teacher";
 
 export async function getSchoolData() {
   const cookieStore = cookies();
@@ -30,3 +33,36 @@ export async function setSchoolData2(SchoolData: any) {
 
   return null;
 }
+
+export const uploadGenralSc = async (teachersData: any[]) => {
+  try {
+    await connectDB();
+    for (const schedule of teachersData) {
+      let s = await WeeklySchedule.create(schedule);
+      await s.save();
+    }
+  } catch (e: any) {
+    console.error(e);
+  }
+};
+export const uploadeTeachersEx = async (teachers: any[]) => {
+  await connectDB();
+  await Teacher.insertMany(teachers);
+};
+export const getTeacher = async (teacherName: string) => {
+  await connectDB();
+
+  // تقسيم الاسم إلى كلمات (باستخدام الفراغات)
+  const words = teacherName.split(" ");
+
+  // إنشاء تعبير منتظم يحتوي على جميع الكلمات مع دعم وجود كلمات إضافية
+  const regexPattern = words.map((word) => `(?=.*${word})`).join("") + ".*";
+  const regex = new RegExp(regexPattern, "i"); // "i" لجعل البحث غير حساس لحالة الأحرف
+
+  // البحث في قاعدة البيانات
+  const teacher = await Teacher.findOne({
+    name: { $regex: regex },
+  }).lean();
+
+  return teacher as { _id: string };
+};

@@ -36,6 +36,11 @@ const Dashboard = () => {
     weekStartDate: Date;
     lessons: Lesson[];
   } | null>(null);
+  const [scheduleTemplate, setScheduleTemplate] = useState<{
+    teacher: ITeacher;
+    isTemplate: boolean;
+    lessons: Lesson[];
+  } | null>(null);
   const [teachers, setTeachers] = useState([]);
   const [selectedNotes, setSelectedNotes] = useState<string[]>([]);
   const [customNote, setCustomNote] = useState<string>(""); // State for custom note
@@ -112,7 +117,8 @@ const Dashboard = () => {
       setSchedule,
       setNotes,
       setTeachers,
-      setSelectedTeacher
+      setSelectedTeacher,
+      setScheduleTemplate
     );
   };
 
@@ -132,7 +138,8 @@ const Dashboard = () => {
   useEffect(() => {
     console.log(selectedOptions);
   }, [selectedOptions]);
-  console.log(notes);
+  // console.log(notes);
+  // console.log(scheduleTemplate);
   return (
     <Box sx={{ padding: "0px 20px 20px 20px", height: "100vh" }}>
       <Grid container className={` -translate-y-20 p-0 `}>
@@ -159,6 +166,7 @@ const Dashboard = () => {
           setDuration3={setDuration3}
           setCustomNote={setCustomNote}
           schedule={schedule}
+          scheduleTemplate={scheduleTemplate}
           selectedCell={selectedCell}
           TeacherId={TeacherId}
           handleSelectTeacher={handleSelectTeacher}

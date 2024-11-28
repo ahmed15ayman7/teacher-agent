@@ -41,6 +41,7 @@ const AddNotes = ({
   setSTART_END_WEEK,
   TeacherId,
   schedule,
+  scheduleTemplate,
   duration,
   duration2,
   setDuration,
@@ -89,6 +90,11 @@ const AddNotes = ({
   schedule: {
     teacher: ITeacher;
     weekStartDate: Date;
+    lessons: Lesson[];
+  } | null;
+  scheduleTemplate: {
+    teacher: ITeacher;
+    isTemplate: boolean;
     lessons: Lesson[];
   } | null;
 }) => {
@@ -243,6 +249,7 @@ const AddNotes = ({
         notes={notes}
         handleCellClick={handleCellClick}
         schedule={schedule}
+        scheduleTemplate={scheduleTemplate}
       />
 
       {/* Multi-Select Options */}

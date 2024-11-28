@@ -14,7 +14,8 @@ export const handleSelectTeacherHandlerReport = async (
   START_END_WEEK: { start: Date; end: Date },
   setSchedule: React.Dispatch<React.SetStateAction<any>>,
   setNotes: React.Dispatch<React.SetStateAction<any>>,
-  setSelectedTeacher: React.Dispatch<React.SetStateAction<string>>
+  setSelectedTeacher: React.Dispatch<React.SetStateAction<string>>,
+  setScheduleTemplate: React.Dispatch<React.SetStateAction<any>>
 ) => {
   try {
     const start = START_END_WEEK.start.toLocaleDateString("en-US", {
@@ -34,20 +35,33 @@ export const handleSelectTeacherHandlerReport = async (
     setSchedule(fetchedSchedule);
     setSelectedTeacher(id);
     let teacherLessons: {
-      [teacherId: string]: { lessons: Lesson[]; name: string };
+      [teacherId: string]: {
+        lessons: Lesson[];
+        name: string;
+        lessonsT: Lesson[];
+      };
     } = {};
 
     fetchedSchedule?.forEach(
-      (item: { lessons: Lesson[]; teacher: { _id: string; name: string } }) => {
+      (item: {
+        lessons: Lesson[];
+        teacher: { _id: string; name: string };
+        isTemplate: boolean;
+      }) => {
         let lessons = item.lessons;
-        let teacherId = item.teacher._id; // Teacher's unique ID
+        let teacherId = item.teacher._id;
         let teacherName = item.teacher.name;
 
         if (!teacherLessons[teacherId]) {
-          teacherLessons[teacherId] = { lessons: [], name: teacherName };
+          teacherLessons[teacherId] = {
+            lessons: [],
+            name: teacherName,
+            lessonsT: [],
+          };
         }
-
-        teacherLessons[teacherId].lessons.push(...lessons);
+        item.isTemplate === true
+          ? teacherLessons[teacherId].lessonsT.push(...lessons)
+          : teacherLessons[teacherId].lessons.push(...lessons);
       }
     );
 
@@ -75,12 +89,12 @@ export const handleSelectTeacherHandlerReport = async (
       };
     } = {};
 
-    for (const [teacherId, { lessons, name }] of Object.entries(
+    for (const [teacherId, { lessons, name, lessonsT }] of Object.entries(
       teacherLessons
     )) {
       teacherStatistics[teacherId] = {
         name,
-        lessonCount: lessons.length,
+        lessonCount: lessonsT.length,
         ...calculateStatistics(lessons),
       };
     }

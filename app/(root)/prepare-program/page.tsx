@@ -12,6 +12,7 @@ import {
   TextField,
   Typography,
   FormHelperText,
+  styled,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { SchoolSchema, schoolSchema } from "@/lib/schema/school";
@@ -28,6 +29,19 @@ import {
 } from "@/constants";
 import { useQuery } from "@tanstack/react-query";
 import { getSchoolData, setSchoolData2 } from "@/lib/actions/user.action";
+import { addGenralScheduleExcel } from "@/hook/addGenralSchedule";
+import { addTeachersExcel } from "@/hook/addTeachersExcel";
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
 
 const FormComponent: React.FC = () => {
   const {
@@ -105,18 +119,52 @@ const FormComponent: React.FC = () => {
     }
   };
 
-  async function downloadTeachers() {
-    let response = await axios.get(`/api/teachers?schoolId=${SchoolData._id}`);
-    downloadTeachersExcel(response.data, {
-      schoolName: SchoolData.schoolName,
-      principalName: SchoolData.principal,
-      educationalSupervisor: SchoolData.deputy,
-    });
+  // async function downloadTeachers() {
+  //   let response = await axios.get(`/api/teachers?schoolId=${SchoolData._id}`);
+  //   downloadTeachersExcel(response.data, {
+  //     schoolName: SchoolData.schoolName,
+  //     principalName: SchoolData.principal,
+  //     educationalSupervisor: SchoolData.deputy,
+  //   });
+  // }
+
+  async function UploudGenralSchedul(e: React.ChangeEvent<HTMLInputElement>) {
+    // let response = await axios.get(
+    //   `/api/teachers?schoolId=${SchoolData._id}&&i=1`
+    // );
+    // generateExcel(response.data);
+
+    if (e.target.files) {
+      await addGenralScheduleExcel(e.target.files[0]);
+    }
   }
-  
- async function dwonloadGenralSchedul() {
-    let response = await axios.get(`/api/teachers?schoolId=${SchoolData._id}&&i=1`);
-    generateExcel(response.data);
+  async function UploudTeachersExcel(e: React.ChangeEvent<HTMLInputElement>) {
+    const toastId = toast.loading("جاري اضافة المعلمين");
+    if (e.target.files) {
+      try {
+        await addTeachersExcel(e.target.files[0], SchoolData._id);
+        toast.update(toastId, {
+          render: "تم اضافة  المعلمين",
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
+        });
+      } catch (error: any) {
+        toast.update(toastId, {
+          render: `فشل في الاضافه ${error?.message}`,
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
+      }
+    } else {
+      toast.update(toastId, {
+        render: `فشل في تحميل الملف يرجي اختيار الملف `,
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+    }
   }
 
   return (
@@ -444,27 +492,39 @@ const FormComponent: React.FC = () => {
 
         <Grid size={{ md: 4, sm: 12, xs: 12 }}>
           <Button
-            className={buttonStyles2}
+            component="label"
+            role={undefined}
+            variant="contained"
             fullWidth
-            onClick={(e) => {
-              e.preventDefault();
-              dwonloadGenralSchedul();
-            }}
+            className={buttonStyles2}
+            tabIndex={-1}
           >
             اضغط هنا لتحميل الجدول العام إكسل
+            <VisuallyHiddenInput
+              type="file"
+              accept=".xlsx"
+              onChange={(event) => UploudGenralSchedul(event)}
+              multiple
+            />
           </Button>
         </Grid>
 
         <Grid size={{ md: 4, sm: 12, xs: 12 }}>
           <Button
-            className={buttonStyles2}
+            component="label"
+            role={undefined}
+            variant="contained"
             fullWidth
-            onClick={(e) => {
-              e.preventDefault();
-              downloadTeachers();
-            }}
+            className={buttonStyles2}
+            tabIndex={-1}
           >
             اضغط هنا لتحميل بيانات المعلمين إكسل
+            <VisuallyHiddenInput
+              type="file"
+              accept=".xlsx"
+              onChange={(event) => UploudTeachersExcel(event)}
+              multiple
+            />
           </Button>
         </Grid>
 

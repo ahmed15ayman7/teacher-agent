@@ -19,15 +19,15 @@ export interface ITeacher {
 }
 const TeacherSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  schoolId: { type: String, required: true },
-  specialization: { type: String, required: false },
   civilRecord: { type: String, required: false },
-  sessionCount: { type: Number, required: false },
   phoneNumber: { type: String, required: false },
+  specialization: { type: String, required: false },
+  schoolId: { type: String, required: true },
+  sessionCount: { type: Number, required: false },
   teachingStage: {
     type: String,
     enum: ["Primary", "Intermediate", "Secondary"],
-    required: true,
+    // required: true,
   },
   birthDate: { type: Date, required: false },
   supervisionDay: { type: String, required: false },

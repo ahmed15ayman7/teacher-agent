@@ -19,6 +19,7 @@ const NodesTable = ({
   handleCellClick,
   notes,
   schedule,
+  scheduleTemplate,
 }: {
   handleCellClick: (day: string, t: string) => void;
   notes: {
@@ -27,6 +28,11 @@ const NodesTable = ({
   schedule: {
     teacher: ITeacher;
     weekStartDate: Date;
+    lessons: Lesson[];
+  } | null;
+  scheduleTemplate: {
+    teacher: ITeacher;
+    isTemplate: boolean;
     lessons: Lesson[];
   } | null;
 }) => {
@@ -38,7 +44,7 @@ const NodesTable = ({
             <TableCell sx={{ border: "1px solid black", textAlign: "center" }}>
               اليوم
             </TableCell>
-            {[...Array(8)].map((_, index) => (
+            {[...Array(7)].map((_, index) => (
               <Tooltip title={`الحصة ${index + 1}`} arrow key={index}>
                 <TableCell
                   sx={{ border: "1px solid black", textAlign: "center" }}
@@ -59,11 +65,11 @@ const NodesTable = ({
                   <Box sx={{ cursor: "pointer" }}>{day}</Box>
                 </Tooltip>
               </TableCell>
-              {[...Array(8)].map((_, i) => {
+              {[...Array(7)].map((_, i) => {
                 const period = i + 1;
                 const key = `${day}-${period}`;
                 const noteData = notes[key];
-                let title = schedule?.lessons
+                let title = scheduleTemplate?.lessons
                   .map((e) =>
                     e.day ===
                       getEnglishDay(
@@ -94,7 +100,7 @@ const NodesTable = ({
                     key={key}
                   >
                     {title && (
-                      <Typography className=" font-bold text-[23px] text-center w-full ">
+                      <Typography className=" font-bold text-[18px] text-center w-full ">
                         {title}
                       </Typography>
                     )}

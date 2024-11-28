@@ -20,10 +20,11 @@ export interface Lesson {
   };
 }
 
-interface WeeklyScheduleDocument extends Document {
+export interface WeeklyScheduleDocument extends Document {
   teacher: mongoose.Types.ObjectId;
-  weekStartDate: Date;
+  isTemplate: boolean;
   lessons: Lesson[];
+  weekStartDate?: Date;
 }
 
 const lessonSchema = new Schema<Lesson>({
@@ -73,7 +74,8 @@ const weeklyScheduleSchema = new Schema<WeeklyScheduleDocument>({
     ref: "Teacher",
     required: true,
   },
-  weekStartDate: { type: Date, required: true },
+  isTemplate: { type: Boolean, default: false },
+  weekStartDate: { type: Date },
   lessons: [lessonSchema],
 });
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Grid,
   Box,
@@ -9,6 +9,8 @@ import {
   TextField,
   FormControl,
 } from "@mui/material";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import { IconCalendar } from "@tabler/icons-react";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -60,20 +62,63 @@ function ReportPage() {
     weekStartDate: Date;
     lessons: Lesson[];
   } | null>(null);
+  const [scheduleTemplate, setScheduleTemplate] = useState<{
+    teacher: ITeacher;
+    isTemplate: boolean;
+    lessons: Lesson[];
+  } | null>(null);
   let { data: SchoolData, isLoading } = useQuery({
     queryKey: ["SchoolData"],
     queryFn: () => getSchoolData(),
   });
   useEffect(() => {
-    !isLoading && axios.get(`/api/teachers?schoolId=${SchoolData._id}`).then((response) => {
-      setTeachers(response.data);
-    });
+    !isLoading &&
+      axios.get(`/api/teachers?schoolId=${SchoolData._id}`).then((response) => {
+        setTeachers(response.data);
+      });
   }, [SchoolData]);
-  const handleButtonClick = (action: string) => {
+  const tableRef = useRef<HTMLDivElement>(null);
+
+  const generatePDF = async () => {
+    if (tableRef.current) {
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      const canvas = await html2canvas(tableRef.current, {
+        scale: 2, // تحسين جودة الصورة
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const imgWidth = pdfWidth; // عرض الصورة بالكامل على عرض الصفحة
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      let yPosition = 0; // بداية الصفحة في ملف PDF
+
+      while (yPosition < imgHeight) {
+        pdf.addImage(
+          imgData,
+          "PNG",
+          0,
+          -yPosition, // إزاحة الجزء المراد رسمه
+          imgWidth,
+          imgHeight
+        );
+
+        yPosition += pdfHeight; // الانتقال إلى الصفحة التالية
+
+        if (yPosition < imgHeight) {
+          pdf.addPage(); // إضافة صفحة جديدة إذا كان هناك المزيد من المحتوى
+        }
+      }
+
+      pdf.save("تقرير_المعلمين.pdf");
+    }
+  };
+  const handleButtonClick = async (action: string) => {
     switch (action) {
       case "طباعة التقرير":
         isPrint ? setIsPrintGr(12) : setIsPrintGr(10);
-        isPrint && window.print();
+        isPrint && (await generatePDF());
         setIsPrint((e) => !e);
         break;
       case "تنزيل التقرير":
@@ -142,7 +187,8 @@ function ReportPage() {
           { start: START_END_WEEK.start, end: START_END_WEEK.end },
           setSchedule,
           setNotes,
-          setSelectedTeacher
+          setSelectedTeacher,
+          setScheduleTemplate
         )
       : toast.info(`يرجي اختيار التاريخ`);
   };
@@ -158,7 +204,6 @@ function ReportPage() {
         teachers.map((e: { _id: string }) => e._id).join(",")
       );
   }, [checked, START_END_WEEK]);
-  console.log(teachers);
 
   return (
     <div className="">
@@ -181,6 +226,7 @@ function ReportPage() {
           <Grid item xs={10}>
             {" "}
             <TeacherReportTable
+              tableRef={tableRef}
               teachers={teachers}
               notes={notes}
               teacherName={

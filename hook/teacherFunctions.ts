@@ -3,7 +3,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 import { getArabicDay, generateNoteDisplay } from "@/constants";
-import { Lesson } from "@/lib/models/WeeklySchedule";
+import { Lesson, WeeklyScheduleDocument } from "@/lib/models/WeeklySchedule";
 
 export const handleSelectTeacherHandler = async (
   id: string,
@@ -11,7 +11,8 @@ export const handleSelectTeacherHandler = async (
   setSchedule: React.Dispatch<React.SetStateAction<any>>,
   setNotes: React.Dispatch<React.SetStateAction<any>>,
   setTeachers: React.Dispatch<React.SetStateAction<any>>,
-  setSelectedTeacher: React.Dispatch<React.SetStateAction<string>>
+  setSelectedTeacher: React.Dispatch<React.SetStateAction<string>>,
+  setScheduleTemplate: React.Dispatch<React.SetStateAction<any>>
 ) => {
   try {
     const start = START_END_WEEK.start.toLocaleDateString("en-US", {
@@ -27,8 +28,16 @@ export const handleSelectTeacherHandler = async (
     const response = await axios.get(
       `/api/schedule?TeacherId=${id}&&start=${start}&&end=${end}`
     );
-    const fetchedSchedule = response.data[0];
-    setSchedule(fetchedSchedule);
+    let sc: { lessons: Lesson[] }[] = [];
+    console.log(response);
+    response.data?.map((e: WeeklyScheduleDocument) => {
+      if (e?.isTemplate === true) {
+        setScheduleTemplate(e);
+      } else {
+        setSchedule(e);
+        sc.push(e);
+      }
+    });
     setSelectedTeacher(id);
 
     const updatedNotes: {
@@ -38,8 +47,7 @@ export const handleSelectTeacherHandler = async (
         durations?: string[];
       };
     } = {};
-
-    fetchedSchedule?.lessons.forEach((lesson: Lesson) => {
+    sc[0]?.lessons.forEach((lesson: Lesson) => {
       console.log(lesson.notes);
       const note = generateNoteDisplay(lesson.notes);
       console.log(note);

@@ -13,21 +13,31 @@ export async function GET(request: NextRequest) {
 
   try {
     const filters: {
-      weekStartDate?: { $gte?: Date; $lte?: Date };
-      $or?: { teacher: string }[];
+      // weekStartDate?: { $gte?: Date; $lte?: Date };
+      $or?: (
+        | { teacher: string }
+        | { isTemplate: boolean }
+        | { weekStartDate: any }
+      )[];
     } = {};
 
     if (start && end) {
-      filters.weekStartDate = { $gte: new Date(start), $lte: new Date(end) };
-    } else if (start) {
-      filters.weekStartDate = { $gte: new Date(start) };
-    } else if (end) {
-      filters.weekStartDate = { $lte: new Date(end) };
+      filters.$or?.push({
+        weekStartDate: { $gte: new Date(start), $lte: new Date(end) },
+      });
     }
+    // else if (start) {
+    //   filters.$or?.push({weekStartDate:{ $gte: new Date(start) }})
+    // } else if (end) {
+    //   filters.$or?.push({weekStartDate: { $lte: new Date(end) }})
+    // }
 
     if (TeacherId) {
       const teacherIds = TeacherId.split(",");
-      filters.$or = teacherIds.map((id) => ({ teacher: id }));
+      filters.$or = [
+        // { isTemplate: true },
+        ...teacherIds.map((id) => ({ teacher: id })),
+      ];
     }
 
     const schedules = await WeeklySchedule.find(filters).populate({

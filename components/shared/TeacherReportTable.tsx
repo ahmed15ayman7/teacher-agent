@@ -24,6 +24,7 @@ const TeacherReportTable = ({
   startDate,
   endDate,
   teachers,
+  tableRef,
 }: {
   notes: {
     [teacherId: string]: {
@@ -53,6 +54,7 @@ const TeacherReportTable = ({
   startDate: string;
   endDate: string;
   teachers: { _id: string; name: string }[];
+  tableRef: React.RefObject<HTMLDivElement>;
 }) => {
   const teacherNames = splitNames(teacherName);
 
@@ -60,6 +62,7 @@ const TeacherReportTable = ({
     <div>
       <TableContainer
         className="print"
+        ref={tableRef}
         component={Paper}
         sx={{ maxWidth: 900, margin: "auto", padding: 2, boxShadow: 3 }}
         dir="rtl"
