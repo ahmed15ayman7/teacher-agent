@@ -190,6 +190,9 @@ const TeacherScheduleTable: React.FC<{
                       key={`${teacher.name}-${day}-${period}`}
                       align="center"
                       style={{
+                        backgroundColor: lesson?.title.includes("منتظر")
+                          ? "yellow"
+                          : "inherit",
                         borderRight: "1px solid #ddd", // خط رفيع بين الخلايا
                       }}
                     >

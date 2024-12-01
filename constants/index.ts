@@ -674,7 +674,7 @@ export const downloadTeachersExcel = async (
     "مهام أخرى",
     "مكان الإشراف",
     "الفصول التي يتم تدريسها",
-    "الجدول الأسبوعي",
+    // "الجدول الأسبوعي",
   ];
 
   worksheet.columns = headers.map((header, index) => ({
@@ -718,7 +718,7 @@ export const downloadTeachersExcel = async (
       teacher.OtherTasksAssigned,
       teacher.SupervisionPlace,
       teacher.ClassesTaught,
-      teacher.WeeklySchedule,
+      // teacher.WeeklySchedule,
     ]);
 
     // استخدام لون مختلف لكل صف
@@ -791,7 +791,7 @@ export const downloadTeachersExcel = async (
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${schoolData.schoolName}_بيانات_المعلمين.xlsx`;
+  a.download = `${schoolData.schoolName}_بيانات_المعلم__${teachers[0].name}.xlsx`;
   a.click();
   window.URL.revokeObjectURL(url);
 };

@@ -91,6 +91,9 @@ const NodesTable = ({
                       border: "1px solid black",
                       textAlign: "center",
                       cursor: "pointer",
+                      backgroundColor: title?.includes("منتظر")
+                        ? "yellow"
+                        : "inherit",
                     }}
                     className={"max-w-24"}
                     onClick={() => handleCellClick(day, `${period}`)}

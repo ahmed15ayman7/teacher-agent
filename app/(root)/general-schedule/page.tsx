@@ -10,6 +10,7 @@ import TeacherScheduleTable from "@/components/shared/TeacherScheduleTable";
 import { getSchoolData } from "@/lib/actions/user.action";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const ExcelViewer = () => {
   let router = useRouter();
@@ -19,8 +20,8 @@ const ExcelViewer = () => {
   const [fileUrl, setFileUrl] = useState("");
 
   const handleShare = () => {
-    navigator.clipboard.writeText(fileUrl);
-    alert("تم نسخ الرابط للمشاركة!");
+    navigator.clipboard.writeText(location.href);
+    toast.success("تم نسخ الرابط للمشاركة!");
   };
   let { data: SchoolData, isLoading } = useQuery({
     queryKey: ["SchoolData"],
@@ -94,7 +95,7 @@ const ExcelViewer = () => {
                 طباعة
               </Button>
             </Tooltip>
-            {/* <Tooltip title="مشاركة">
+            <Tooltip title="مشاركة">
               <Button
                 variant="contained"
                 className={buttonStyles}
@@ -102,7 +103,7 @@ const ExcelViewer = () => {
               >
                 مشاركة
               </Button>
-            </Tooltip> */}
+            </Tooltip>
             <Tooltip title="تنزيل">
               <Button
                 variant="contained"

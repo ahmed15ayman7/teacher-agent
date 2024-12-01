@@ -20,10 +20,11 @@ import Grid from "@mui/material/Grid";
 import Grid2 from "@mui/material/Grid2";
 import { z } from "zod";
 import axios from "axios";
-import { buttonStyles } from "@/constants";
+import { buttonStyles, downloadTeachersExcel } from "@/constants";
 import { useRouter } from "next/navigation";
 import { getSchoolData } from "@/lib/actions/user.action";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 // Define Zod schema for form validation
 const teacherSchema = z.object({
@@ -70,6 +71,7 @@ const TeacherForm = () => {
     });
   const [teachers, setTeachers] = useState([]);
   const [selectedTeacher, setSelectedTeacher] = useState("");
+  const [Teacher, setTeacher] = useState();
   const [loading, setLoading] = useState(false);
 
   let { data: SchoolData, isLoading } = useQuery({
@@ -88,6 +90,7 @@ const TeacherForm = () => {
   const onSelectTeacher = async (teacherId: string) => {
     const teacherData = await axios.get(`/api/teachers/${teacherId}`);
     setSelectedTeacher(teacherData.data._id);
+    setTeacher(teacherData.data);
     Object.keys(teacherData.data).forEach((key) => {
       setValue(key as keyof TeacherFormInputs, teacherData.data[key]);
     });
@@ -104,13 +107,22 @@ const TeacherForm = () => {
     setSelectedTeacher("");
     router.back();
   };
-
+  const handleShare = () => {
+    navigator.clipboard.writeText(location.href);
+    toast.success("تم نسخ الرابط للمشاركة!");
+  };
   const handleButtonClick = (action: string) => {
     switch (action) {
       case "طباعة التقرير":
         window.print();
         break;
       case "تنزيل التقرير":
+        Teacher &&
+          downloadTeachersExcel([Teacher], {
+            schoolName: SchoolData.schoolName,
+            principalName: SchoolData.principal,
+            educationalSupervisor: SchoolData.deputy,
+          });
         break;
 
       default:
@@ -300,9 +312,9 @@ const TeacherForm = () => {
                   <TextField
                     {...field}
                     defaultValue={
-                      field.value ?
-                      new Date(field.value).toLocaleDateString("en-US")
-                      :undefined
+                      field.value
+                        ? new Date(field.value).toLocaleDateString("en-US")
+                        : undefined
                     }
                     label="تاريخ الميلاد"
                     type="date"
@@ -480,6 +492,15 @@ const TeacherForm = () => {
             >
               طباعة
             </Button>
+            <Tooltip title="مشاركة">
+              <Button
+                variant="contained"
+                className={buttonStyles}
+                onClick={handleShare}
+              >
+                مشاركة
+              </Button>
+            </Tooltip>
             <Button
               variant="contained"
               className={buttonStyles}

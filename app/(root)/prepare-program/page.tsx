@@ -499,7 +499,7 @@ const FormComponent: React.FC = () => {
             className={buttonStyles2}
             tabIndex={-1}
           >
-            اضغط هنا لتحميل الجدول العام إكسل
+            اضغط هنا لتحميل مدموج الجدول العام مع الانتظار إكسل
             <VisuallyHiddenInput
               type="file"
               accept=".xlsx"
@@ -525,12 +525,6 @@ const FormComponent: React.FC = () => {
               onChange={(event) => UploudTeachersExcel(event)}
               multiple
             />
-          </Button>
-        </Grid>
-
-        <Grid size={{ md: 4, sm: 12, xs: 12 }}>
-          <Button className={buttonStyles2} fullWidth>
-            اضغط هنا لتحميل جدول الانتظار الرسمي إكسل
           </Button>
         </Grid>
       </Grid>
