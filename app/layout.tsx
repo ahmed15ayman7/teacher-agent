@@ -12,6 +12,7 @@ const geistMono = localFont({
   variable: "--font-geist-mono",
   weight: "100 900",
 });
+
 export const metadata: Metadata = {
   title: "المساعد في متابعة العملية التعليمية | أداة تعليمية احترافية",
   description:
