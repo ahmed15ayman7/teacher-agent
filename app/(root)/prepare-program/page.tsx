@@ -31,6 +31,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getSchoolData, setSchoolData2 } from "@/lib/actions/user.action";
 import { addGenralScheduleExcel } from "@/hook/addGenralSchedule";
 import { addTeachersExcel } from "@/hook/addTeachersExcel";
+import { GridDeleteIcon } from "@mui/x-data-grid";
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
   clipPath: "inset(50%)",
@@ -166,7 +167,37 @@ const FormComponent: React.FC = () => {
       });
     }
   }
+  const handleDelete = async () => {
+    // إظهار رسالة تحميل
+    const toastId = toast.loading("جاري حذف الجداول...");
 
+    try {
+      if (SchoolData) {
+        // استدعاء API الحذف باستخدام Axios
+        const { data } = await axios.delete("/api/schedule/delete", {
+          params: { schoolId: SchoolData._id }, // إرسال schoolId كمعامل
+        });
+
+        // تحديث التوست إلى نجاح
+        toast.update(toastId, {
+          render: `تم الحذف بنجاح  جدول `,
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+
+      // تحديث التوست إلى خطأ
+      toast.update(toastId, {
+        render: "حدث خطأ أثناء الحذف",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+    }
+  };
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -525,6 +556,24 @@ const FormComponent: React.FC = () => {
               onChange={(event) => UploudTeachersExcel(event)}
               multiple
             />
+          </Button>
+        </Grid>
+        <Grid size={{ md: 4, sm: 12, xs: 12 }}>
+          <Button
+            component="label"
+            role="button"
+            variant="contained"
+            fullWidth
+            className={buttonStyles2
+              .split("gray")
+              .join("")
+              .concat(" text-white gap-10 ")}
+            tabIndex={-1}
+            onClick={handleDelete}
+            startIcon={<GridDeleteIcon />}
+            color="error"
+          >
+            حذف الجدول العام
           </Button>
         </Grid>
       </Grid>

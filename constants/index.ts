@@ -53,7 +53,8 @@ export const exportToExcel = async (
     };
   },
   startDate: string,
-  endDate: string
+  endDate: string,
+  isSend?: boolean
 ) => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("تقرير");
@@ -189,6 +190,9 @@ export const exportToExcel = async (
   const blob = new Blob([buffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
+  if (isSend) {
+    return blob;
+  }
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

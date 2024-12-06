@@ -8,9 +8,11 @@ import {
   IconButton,
   TextField,
   FormControl,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { IconCalendar } from "@tabler/icons-react";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -28,7 +30,9 @@ import Grid2 from "@mui/material/Grid2";
 import TeacherReportTable from "@/components/shared/TeacherReportTable";
 import { getSchoolData } from "@/lib/actions/user.action";
 import { useQuery } from "@tanstack/react-query";
-function ReportPage() {
+import { useRouter } from "next/navigation";
+import { sendFileToWhatsApp } from "@/hook/sendFileToWhatsApp";
+export default function ReportPage() {
   const [teachers, setTeachers] = useState([]);
   const [selectedTeacher, setSelectedTeacher] = useState("");
   const [selectedTeacherName, setSelectedTeacherName] = useState("");
@@ -84,7 +88,50 @@ function ReportPage() {
       });
   }, [SchoolData]);
   const tableRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [isMan, setIsMan] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  let router = useRouter();
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
 
+  const handleClose = () => {
+    setOpen(false);
+  };
+  const handleSubmit = async () => {
+    const toastId = toast.loading("جاري ارسال القرير ");
+    try {
+      if (
+        schedule &&
+        notes &&
+        START_END_WEEK &&
+        START_END_WEEK.start &&
+        START_END_WEEK.end
+      ) {
+        const blob = await exportToExcel(
+          notes,
+          START_END_WEEK.start.toLocaleDateString("en-US"),
+          START_END_WEEK.end.toLocaleDateString("en-US"),
+          true
+        );
+
+        // إرسال الملف عبر واتساب
+        if (blob && phoneNumber) {
+          sendFileToWhatsApp(blob, phoneNumber);
+          toast.update(toastId, {
+            render: "تم إرسال التقرير بنجاح عبر واتساب.",
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+          });
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("فشل إرسال التقرير عبر واتساب.");
+    }
+  };
   const handleButtonClick = async (action: string) => {
     switch (action) {
       case "طباعة التقرير":
@@ -130,20 +177,17 @@ function ReportPage() {
 
       case "إرسال التقرير":
         // Add logic to send the report (e.g., email or API request)
-        console.log("Sending report...");
-        // Call a function or API to handle sending the report
+        handleClickOpen();
         break;
 
       case "إرسال للمدير":
-        // Add logic to send the report to the manager
-        console.log("Sending report to manager...");
-        // Call a function or API to send the report specifically to the manager
+        setIsMan(true);
+        handleClickOpen();
+
         break;
 
       case "العودة":
-        // Add logic to navigate back or close the current view
-        console.log("Going back...");
-        // Use a navigation method or state update to return to the previous page
+        router.back();
         break;
 
       default:
@@ -465,8 +509,39 @@ function ReportPage() {
           </Box>
         </Grid>
       </Grid>
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>أدخل رقم الهاتف {isMan && "الخاص بالمدير"}</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="رقم الهاتف"
+            type="tel"
+            fullWidth
+            sx={{
+              "& .MuiInputLabel-root": {
+                color: "#006d4e", // تغيير لون التسمية (label)
+              },
+              color: "#000",
+            }}
+            variant="outlined"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            required
+            inputProps={{
+              pattern: "^[0-9]{10}$", // يحدد صيغة الرقم
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            إلغاء
+          </Button>
+          <Button onClick={handleSubmit} color="primary">
+            إرسال {isMan && " للمدير"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
-
-export default ReportPage;

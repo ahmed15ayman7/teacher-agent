@@ -104,6 +104,69 @@ export const handleSaveNoteHandler = async (
           autoClose: 3000,
         });
       }
+    } else {
+      setNotes({});
+
+      let lesson = {
+        day: getEnglishDay(
+          selectedCell?.day as
+            | "الأحد"
+            | "الاثنين"
+            | "الثلاثاء"
+            | "الأربعاء"
+            | "الخميس"
+        ),
+        period: parseInt(selectedCell?.period!),
+        notes: {
+          absent: false,
+          late: { isLate: false, duration: 0 },
+          earlyLeave: { leftEarly: false, remainingTime: 0 },
+          didNotSendWeeklyPlan: false,
+          missedLesson: false,
+          missedStandby: false,
+          enteredStandby: undefined,
+          waitingDone: undefined,
+          lateForWork: { isLate: false, duration: 0 },
+          didNotActivateSupervision: false,
+          leftSchool: false,
+          note: "",
+        },
+        title: "",
+      };
+      let startWeek = START_END_WEEK.start.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+      });
+      try {
+        const response = await axios.post("/api/schedule/add-lesson", {
+          teacherId: selectedTeacher,
+          weekStartDate: startWeek,
+          lesson,
+        });
+        if (response.status === 200) {
+          toast.update(toastId, {
+            render: "تم الحفظ بنجاح",
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+          });
+        } else {
+          toast.update(toastId, {
+            render: `خطأ:${response.data?.error}`,
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+          });
+        }
+      } catch (error: any) {
+        toast.update(toastId, {
+          render: `خطأ:${error}`,
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+        });
+      }
     }
   } else {
     toast.update(toastId, {

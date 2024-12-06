@@ -25,6 +25,8 @@ import { useRouter } from "next/navigation";
 import { getSchoolData } from "@/lib/actions/user.action";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { ITeacher } from "@/lib/models/Teacher";
+import { GridDeleteIcon } from "@mui/x-data-grid";
 
 // Define Zod schema for form validation
 const teacherSchema = z.object({
@@ -71,8 +73,9 @@ const TeacherForm = () => {
     });
   const [teachers, setTeachers] = useState([]);
   const [selectedTeacher, setSelectedTeacher] = useState("");
-  const [Teacher, setTeacher] = useState();
+  const [Teacher, setTeacher] = useState<ITeacher>();
   const [loading, setLoading] = useState(false);
+  const [isDelete, setDelete] = useState(0);
 
   let { data: SchoolData, isLoading } = useQuery({
     queryKey: ["SchoolData"],
@@ -85,7 +88,7 @@ const TeacherForm = () => {
         setTeachers(response.data);
         setLoading(false);
       });
-  }, [SchoolData]);
+  }, [SchoolData, isDelete]);
   let router = useRouter();
   const onSelectTeacher = async (teacherId: string) => {
     const teacherData = await axios.get(`/api/teachers/${teacherId}`);
@@ -129,7 +132,37 @@ const TeacherForm = () => {
         console.warn("Unknown action:", action);
     }
   };
-  console.log(teachers);
+  const handleDelete = async () => {
+    // إظهار رسالة تحميل
+    const toastId = toast.loading("جاري حذف المعلم والجداول المرتبطة...");
+
+    try {
+      // استدعاء API الحذف باستخدام Axios
+      const { data } = await axios.delete(`/api/teachers/${selectedTeacher}`);
+
+      // تحديث التوست إلى نجاح
+      toast.update(toastId, {
+        render: data.message,
+        type: "success",
+        isLoading: false,
+        autoClose: 3000,
+      });
+      setSelectedTeacher("");
+      reset();
+      setDelete(Math.random());
+    } catch (error: any) {
+      console.error(error);
+
+      // تحديث التوست إلى خطأ
+      toast.update(toastId, {
+        render: error.response?.data?.message || "حدث خطأ أثناء الحذف",
+        type: "error",
+        isLoading: false,
+        autoClose: 3000,
+      });
+    }
+  };
+
   return (
     <Box
       component="form"
@@ -508,13 +541,13 @@ const TeacherForm = () => {
             >
               تنزيل
             </Button>
-            <Tooltip title="تعديل">
+            <Tooltip title="حفظ">
               <Button
                 variant="contained"
                 className={buttonStyles}
                 type="submit"
               >
-                تعديل
+                حفظ
               </Button>
             </Tooltip>
             <Tooltip title="عودة">
@@ -524,6 +557,24 @@ const TeacherForm = () => {
                 onClick={handleReset}
               >
                 عودة
+              </Button>
+            </Tooltip>
+            <Tooltip title={`  حذف المعلم ${Teacher?.name} `}>
+              <Button
+                component="label"
+                role="button"
+                variant="contained"
+                fullWidth
+                className={buttonStyles
+                  .split("bg")
+                  .join("")
+                  .concat(" gap-7 text-white")}
+                tabIndex={-1}
+                onClick={handleDelete}
+                startIcon={<GridDeleteIcon />}
+                color="error"
+              >
+                حذف المعلم
               </Button>
             </Tooltip>
           </Box>

@@ -17,6 +17,7 @@ export interface ITeacher {
   WeeklySchedule?: string[];
   schoolId: string;
 }
+
 const TeacherSchema = new mongoose.Schema({
   name: { type: String, required: true },
   civilRecord: { type: String, required: false },

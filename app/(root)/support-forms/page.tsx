@@ -36,7 +36,7 @@ const MyDesign = () => {
   }, [SchoolData]);
   const handleSelectTeacher = async (id: string) => {
     START_END_WEEK && START_END_WEEK?.end && START_END_WEEK?.start
-      ? ""
+      ? setSelectedTeacher(id)
       : toast.info(`يرجي اختيار التاريخ`);
   };
   return (
@@ -185,7 +185,7 @@ const MyDesign = () => {
         {/* الأزرار الجانبية */}
         <Grid item xs={12} sm={2}>
           <Grid container direction="column" spacing={2}>
-            {["مشاركة", "تنزيل", "طباعة", "عودة"].map((label, index) => (
+            {["مشاركة", "تنزيل", "طباعة", "حفظ","عودة"].map((label, index) => (
               <Grid item key={index}>
                 <Tooltip title={`زر ${label}`} arrow>
                   <Button
